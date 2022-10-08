@@ -12,22 +12,29 @@ interface RpgModel {
     /**
      * 游戏模型所具备的能力，例如，某种道具可被使用，也可被装备
      */
-    fun abilities(): List<RpgAbility<*>>
+    fun abilities(): List<RpgAbility<*, *, *, *>>
 
-    fun <Target, Ability: RpgAbility<Target>> getAbility(abilityClass: Class<Ability>): Ability?
+    fun <Ability: RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> getAbility(abilityClass: Class<Ability>): Ability?
 }
 
-class BaseRpgModel(
+/**
+ * 常规的游戏对象，拥有元数据描述，具备一定逻辑执行能力
+ * @author yumetsuki
+ */
+class CommonRpgModel(
     private val meta: RpgMeta,
-    private val abilities: List<RpgAbility<*>>
+    private val abilities: List<RpgAbility<*, *, *, *>>
 ) : RpgModel {
     override fun meta(): RpgMeta = meta
 
-    override fun abilities(): List<RpgAbility<*>> = abilities
+    override fun abilities(): List<RpgAbility<*, *, *, *>> = abilities
 
-    override fun <Target, Ability : RpgAbility<Target>> getAbility(
+    override fun <Ability : RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> getAbility(
         abilityClass: Class<Ability>
     ): Ability? = abilities.filterIsInstance(abilityClass).firstOrNull()
 
 }
 
+inline fun <reified Ability: RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> RpgModel.getAbility(): Ability? {
+    return getAbility(Ability::class.java)
+}
