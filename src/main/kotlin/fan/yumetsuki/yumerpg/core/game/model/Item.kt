@@ -86,14 +86,14 @@ class HpChange(
     /**
      * 计算生命值变化的表达式，返回值为生命值的增减值
      */
-    private val expr: suspend (target: RpgModel) -> Int,
+    private val expr: suspend (owner: RpgModel, target: RpgModel) -> Int,
     override val name: String = "HpChange",
     override val alias: String? = "生命值改变，用于增减生命值"
 ) : NoParamCommandAbility<RpgModel, RpgModel> {
 
     override suspend fun execute(owner: RpgModel, target: RpgModel) {
         target.getAbility<HpAbility, _, _, _, _>()?.apply {
-            value += expr(target)
+            value += expr(owner, target)
         }
     }
 

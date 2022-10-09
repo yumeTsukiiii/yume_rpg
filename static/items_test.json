@@ -1,7 +1,16 @@
 [
   {
-    "id": 1,
     "builder": 1,
-    "name": "HP药水"
+    "meta": {
+      "name": "HP药水"
+    },
+    "abilities": [
+      {
+        "builder": 2,
+        "param": {
+          "expr": "target.hp * 0.5"
+        }
+      }
+    ]
   }
 ]

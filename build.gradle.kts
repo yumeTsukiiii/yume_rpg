@@ -3,6 +3,7 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     kotlin("jvm") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
 }
 
 group = "fan.yumetsuki"
@@ -33,6 +34,7 @@ dependencies {
     getJ2v8SupportSystem()?.let { j2v8System ->
         implementation("com.eclipsesource.j2v8:j2v8_${j2v8System}:4.6.0")
     } ?: error("仅支持 windows / macOS")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     testImplementation(kotlin("test"))
 }
 
