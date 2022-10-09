@@ -1,6 +1,8 @@
 package fan.yumetsuki.yumerpg.core.script
 
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * 表达式引擎，用于执行道具，攻击等数值的计算
@@ -34,7 +36,7 @@ interface ExprRuntimeContext {
      * @param script 脚本字符串
      * @return 脚本执行结果
      */
-    fun exec(script: String): Any
+    fun exec(script: String): Any?
 
     /**
      * 销毁上下文，销毁后则无法再执行脚本
@@ -47,4 +49,12 @@ interface ScriptSerializable {
 
     fun toScriptObj(): JsonElement
 
+}
+
+fun Any?.encodeToScriptObj(): JsonElement = when(this) {
+    is Number -> JsonPrimitive(this)
+    is String -> JsonPrimitive(this)
+    is Boolean -> JsonPrimitive(this)
+    is ScriptSerializable -> toScriptObj()
+    else -> JsonNull
 }

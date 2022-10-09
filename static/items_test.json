@@ -8,7 +8,7 @@
       {
         "builder": 2,
         "param": {
-          "expr": "target.hp * 0.5"
+          "expr": "target.hp.maxValue * 0.5"
         }
       }
     ]

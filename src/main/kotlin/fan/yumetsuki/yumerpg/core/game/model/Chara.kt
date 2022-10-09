@@ -1,6 +1,7 @@
 package fan.yumetsuki.yumerpg.core.game.model
 
 import fan.yumetsuki.yumerpg.core.model.*
+import fan.yumetsuki.yumerpg.core.utils.RangeProperty
 
 /**
  * 创建一个角色，一个角色是拥有[CharacterAbility]能力的对象
@@ -108,7 +109,14 @@ class LevelAbility(override var value: Int, override val name: String = "Level",
  * Hp 值
  * @author yumetsuki
  */
-class HpAbility(override var value: Int, override val name: String = "Hp") : PropertyAbility<Int, RpgModel>
+class HpAbility(
+    value: RangeProperty<Int>,
+    override val name: String = "Hp"
+) : PropertyAbility<Int, RpgModel> {
+
+    override var value: Int by value
+
+}
 
 /**
  * Mp 值
