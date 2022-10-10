@@ -15,7 +15,7 @@ object ConsumableBuilder : RpgModelBuilder {
 
     override val id: Long = 1L
 
-    override fun build(buildObject: RpgBuildObject): RpgModel {
+    override fun build(buildObject: RpgBuildObject?): RpgModel {
         TODO("Not yet implemented")
     }
 
@@ -30,7 +30,7 @@ object PropertyChangeAbilityBuilder : RpgAbilityBuilder {
 
     override val id: Long = 2L
 
-    override fun build(buildObject: RpgBuildObject): RpgAbility<*, *, *, *> {
+    override fun build(buildObject: RpgBuildObject?): RpgAbility<*, *, *, *> {
         TODO("Not yet implemented")
     }
 

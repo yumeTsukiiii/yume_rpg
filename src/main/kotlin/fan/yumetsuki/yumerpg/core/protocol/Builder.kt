@@ -19,7 +19,7 @@ interface RpgBuilder<BuildResult> {
      * 构建一个[BuildResult]对象
      * @return [BuildResult] 可能是游戏中的任何对象
      */
-    fun build(buildObject: RpgBuildObject): BuildResult
+    fun build(buildObject: RpgBuildObject?): BuildResult
 
 }
 
