@@ -1,6 +1,7 @@
 package fan.yumetsuki.yumerpg.core.model
 
 import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
+import fan.yumetsuki.yumerpg.core.utils.RangeProperty
 import fan.yumetsuki.yumerpg.core.utils.putSerializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
@@ -11,7 +12,8 @@ import kotlinx.serialization.json.buildJsonObject
  */
 interface RpgModel : ScriptSerializable {
     /**
-     * 游戏模型的元信息，例如人物、道具包含名称等等
+     * 游戏模型的元信息，通常用来存储一些不常在游戏中被改变的数据，例如人物名，描述等等
+     * 若需要存储游戏对象的属性，请使用[PropertyAbility]
      */
     fun meta(): RpgMeta
     /**
@@ -19,7 +21,7 @@ interface RpgModel : ScriptSerializable {
      */
     fun abilities(): List<RpgAbility<*, *, *, *>>
 
-    fun <Ability: RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> getAbility(abilityClass: Class<Ability>): Ability?
+    fun <Ability: RpgAbility<*, *, *, *>> getAbility(abilityClass: Class<Ability>): Ability?
 
     override fun toScriptObj(): JsonElement = buildJsonObject {
 
@@ -48,12 +50,54 @@ class CommonRpgModel(
 
     override fun abilities(): List<RpgAbility<*, *, *, *>> = abilities
 
-    override fun <Ability : RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> getAbility(
+    override fun <Ability : RpgAbility<*, *, *, *>> getAbility(
         abilityClass: Class<Ability>
     ): Ability? = abilities.filterIsInstance(abilityClass).firstOrNull()
 
 }
 
-inline fun <reified Ability: RpgAbility<Owner, Target, Param, Result>, Owner, Target, Param, Result> RpgModel.getAbility(): Ability? {
+inline fun <reified Ability: RpgAbility<*, *, *, *>> RpgModel.getAbility(): Ability? {
     return getAbility(Ability::class.java)
+}
+
+suspend inline fun <reified Ability: RpgAbility<RpgModel, Target, Param, Result>, Target, Param, Result> RpgModel.execAbility(
+    target: Target, param: Param
+): Result? {
+    return getAbility<Ability>()?.execute(this, target, param)
+}
+
+fun <T> RpgModel.getProperty(name: String): T {
+    return abilities().filterIsInstance<PropertyAbility<T, RpgModel>>().find {
+        it.name == name
+    }?.value ?: error("未能找到名为 $name 的属性")
+}
+
+fun <T> RpgModel.getPropertyAbilityOrNull(name: String): PropertyAbility<T, RpgModel>? {
+    return abilities().filterIsInstance<PropertyAbility<T, RpgModel>>().find {
+        it.name == name
+    }
+}
+
+fun <T: Comparable<T>> RpgModel.getRangePropertyAbilityOrNull(name: String): RangePropertyAbility<T, RpgModel>? {
+    return abilities().filterIsInstance<RangePropertyAbility<T, RpgModel>>().find {
+        it.name == name
+    }
+}
+
+inline fun <T> RpgModel.changeProperty(name: String, onChange: (value: T) -> T) {
+    getPropertyAbilityOrNull<T>(name)?.let {
+        it.value = onChange(it.value)
+    }
+}
+
+inline fun <T: Comparable<T>> RpgModel.changeRangePropertyMax(name: String, onChange: (value: T) -> T) {
+    getRangePropertyAbilityOrNull<T>(name)?.let {
+        it.maxValue = onChange(it.maxValue)
+    }
+}
+
+inline fun <T: Comparable<T>> RpgModel.changeRangePropertyMin(name: String, onChange: (value: T) -> T) {
+    getRangePropertyAbilityOrNull<T>(name)?.let {
+        it.minValue = onChange(it.minValue)
+    }
 }

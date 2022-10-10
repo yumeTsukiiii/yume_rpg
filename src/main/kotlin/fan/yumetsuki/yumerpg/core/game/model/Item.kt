@@ -32,14 +32,14 @@ fun consumable(name: String, abilities: List<RpgAbility<*, *, *, *>>, descriptio
  * @return 若为消耗品，返回 true 否则为 false
  * @author yumetsuki
  */
-fun RpgModel.isConsumable(): Boolean = getAbility<ConsumableAbility, _, _, _, _>() != null
+fun RpgModel.isConsumable(): Boolean = getAbility<ConsumableAbility>() != null
 
 /**
  * 获取一个对象的个数
  * @return 若该对象为一个物品，则 count 返回 >= 0 的值，否则返回 null
  * @author yumetsuki
  */
-fun RpgModel.count(): Int? = getAbility<CountAbility, _, _, _, _>()?.value
+fun RpgModel.count(): Int? = getAbility<CountAbility>()?.value
 
 /**
  * 个数能力，只要是物品都可以拥有个数，例如消耗品 / 状态
@@ -62,7 +62,7 @@ class ConsumableAbility(
 ) : NoParamCommandAbility<RpgModel, RpgModel> {
 
     override suspend fun execute(owner: RpgModel, target: RpgModel) {
-        owner.getAbility<CountAbility, _, _, _, _>()?.apply {
+        owner.getAbility<CountAbility>()?.apply {
             // 消耗品空了，不能继续消耗
             if (value <= 0) {
                 return
@@ -73,27 +73,6 @@ class ConsumableAbility(
                 .forEach {
                     it.execute(owner, target)
                 }
-        }
-    }
-
-}
-
-/**
- * 改变对象生命值的能力，通常用于恢复技能/药水
- * @author yumetsuki
- */
-class HpChange(
-    /**
-     * 计算生命值变化的表达式，返回值为生命值的增减值
-     */
-    private val expr: suspend (owner: RpgModel, target: RpgModel) -> Int,
-    override val name: String = "HpChange",
-    override val alias: String? = "生命值改变，用于增减生命值"
-) : NoParamCommandAbility<RpgModel, RpgModel> {
-
-    override suspend fun execute(owner: RpgModel, target: RpgModel) {
-        target.getAbility<HpAbility, _, _, _, _>()?.apply {
-            value += expr(owner, target)
         }
     }
 

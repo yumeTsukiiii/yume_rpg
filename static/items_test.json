@@ -1,16 +1,49 @@
 [
   {
-    "builder": 1,
-    "meta": {
-      "name": "HP药水"
-    },
-    "abilities": [
-      {
-        "builder": 2,
-        "param": {
-          "expr": "target.hp.maxValue * 0.5"
+    "builder": 2214123,
+    "param": {
+      "meta": {
+        "description": "我的一个角色"
+      },
+      "abilities": [
+        {
+          "builder": 114514,
+          "param": {
+            "type": "string",
+            "name": "CharacterName",
+            "initValue": "二阶堂梦月"
+          }
+        },
+        {
+          "builder": 114514,
+          "param": {
+            "type": "int",
+            "name": "Hp",
+            "initValue": 3,
+            "maxValue": 3,
+            "minValue": 0
+          }
         }
-      }
-    ]
+      ]
+    }
+  },
+  {
+    "builder": 1,
+    "param": {
+      "meta": {
+        "name": "HP药水",
+        "description": "一种 HP 药水，用来干什么都行！"
+      },
+      "abilities": [
+        {
+          "builder": 2,
+          "param": {
+            "expr": "target.hp.value + target.hp.maxValue * 0.5",
+            "type": "int",
+            "property": "Hp"
+          }
+        }
+      ]
+    }
   }
 ]

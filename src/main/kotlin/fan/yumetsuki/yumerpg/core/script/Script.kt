@@ -1,5 +1,6 @@
 package fan.yumetsuki.yumerpg.core.script
 
+import fan.yumetsuki.yumerpg.core.game.GameEngine
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
@@ -8,13 +9,13 @@ import kotlinx.serialization.json.JsonPrimitive
  * 表达式引擎，用于执行道具，攻击等数值的计算
  * @author yumetsuki
  */
-interface ExprEngine {
+interface ScriptEngine {
 
     /**
      * 创建执行上下文
-     * @return [ExprRuntimeContext]
+     * @return [ScriptRuntimeContext]
      */
-    fun createRuntimeContext(): ExprRuntimeContext
+    fun createRuntimeContext(): ScriptRuntimeContext
 
 }
 
@@ -22,7 +23,7 @@ interface ExprEngine {
  * 脚本执行时的上下文
  * @author yumetsuki
  */
-interface ExprRuntimeContext {
+interface ScriptRuntimeContext {
 
     /**
      * 注册变量，该变量在脚本中可以全局访问
@@ -48,6 +49,23 @@ interface ExprRuntimeContext {
 interface ScriptSerializable {
 
     fun toScriptObj(): JsonElement
+
+}
+
+interface ScriptExecutor {
+
+    /**
+     * 执行脚本
+     * @param variables 表达式中的全局变量
+     * @param script 被执行的脚本字符串
+     */
+    fun <T> execScript(variables: Map<String, ScriptSerializable>, script: String) : T
+
+    /**
+     * @see GameEngine.execScript
+     * @param script 被执行的脚本字符串
+     */
+    fun <T> execScript(script: String) : T
 
 }
 

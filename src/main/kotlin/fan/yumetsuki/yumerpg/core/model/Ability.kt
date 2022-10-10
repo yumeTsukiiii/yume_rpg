@@ -1,5 +1,7 @@
 package fan.yumetsuki.yumerpg.core.model
 
+import kotlin.reflect.KProperty
+
 /**
  * 游戏功能，代表模型本身特有的能力，比如可拥有血条，是否可被使用，可被消耗等
  * @author yumetsuki
@@ -31,6 +33,14 @@ interface PropertyAbility<PropertyType, Owner>: RpgAbility<Owner, Unit, Unit, Pr
     var value: PropertyType
     override suspend fun execute(owner: Owner, target: Unit, param: Unit) = value
 
+}
+
+/**
+ * 拥有上下限值的属性能力，它的[value]属性在赋值时，必须在[minValue]和[maxValue]的范围内
+ */
+interface RangePropertyAbility<PropertyType: Comparable<PropertyType>, Owner>: PropertyAbility<PropertyType, Owner> {
+    var maxValue: PropertyType
+    var minValue: PropertyType
 }
 
 /**

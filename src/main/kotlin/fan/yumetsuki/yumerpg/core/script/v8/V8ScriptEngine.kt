@@ -4,8 +4,8 @@ import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.V8Value
-import fan.yumetsuki.yumerpg.core.script.ExprEngine
-import fan.yumetsuki.yumerpg.core.script.ExprRuntimeContext
+import fan.yumetsuki.yumerpg.core.script.ScriptEngine
+import fan.yumetsuki.yumerpg.core.script.ScriptRuntimeContext
 import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
 import kotlinx.serialization.json.*
 
@@ -13,9 +13,9 @@ import kotlinx.serialization.json.*
  * 基于 V8 的表达式执行引擎
  * @author yumetsuki
  */
-class V8ExprEngine : ExprEngine {
+class V8ScriptEngine : ScriptEngine {
 
-    override fun createRuntimeContext(): ExprRuntimeContext = V8ExprRuntimeContext(V8.createV8Runtime())
+    override fun createRuntimeContext(): ScriptRuntimeContext = V8ScriptRuntimeContext(V8.createV8Runtime())
 
 }
 
@@ -23,9 +23,9 @@ class V8ExprEngine : ExprEngine {
  * 基于 V8 的表达式运行时
  * @author yumetsuki
  */
-class V8ExprRuntimeContext(
+class V8ScriptRuntimeContext(
     private val v8: V8
-): ExprRuntimeContext {
+): ScriptRuntimeContext {
 
     private val refVariables = mutableListOf<V8Object>()
 
