@@ -1,8 +1,5 @@
 package fan.yumetsuki.yumerpg.core.game
 
-import fan.yumetsuki.yumerpg.core.game.model.ScriptAbility
-import fan.yumetsuki.yumerpg.core.model.RpgAbility
-import fan.yumetsuki.yumerpg.core.model.RpgModel
 import fan.yumetsuki.yumerpg.core.script.ScriptEngine
 import fan.yumetsuki.yumerpg.core.script.ScriptExecutor
 import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
@@ -36,9 +33,3 @@ val gameEngine : GameEngine
         override fun <T> execScript(script: String): T = execScript(mapOf(), script)
 
     }
-
-/**
- * 全局的脚本执行能力
- * @author yumetsuki
- */
-val globalScriptAbility: RpgAbility<RpgModel, RpgModel, *, *> = ScriptAbility<RpgModel, RpgModel, Any?, Any?>(gameEngine)

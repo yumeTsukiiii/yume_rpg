@@ -1,8 +1,8 @@
-import fan.yumetsuki.yumerpg.core.game.builder.ConsumableBuilder
-import fan.yumetsuki.yumerpg.core.game.builder.PropertyChangeAbilityBuilder
-import fan.yumetsuki.yumerpg.core.protocol.RpgBuildJsonProtocol
-import fan.yumetsuki.yumerpg.core.protocol.RpgBuildProtocol
-import fan.yumetsuki.yumerpg.core.protocol.registerBuilder
+import fan.yumetsuki.yumerpg.core.builtin.builder.ConsumableBuilder
+import fan.yumetsuki.yumerpg.core.builtin.builder.PropertyChangeAbilityBuilder
+import fan.yumetsuki.yumerpg.core.serialization.RpgBuildJsonProtocol
+import fan.yumetsuki.yumerpg.core.serialization.RpgBuildProtocol
+import fan.yumetsuki.yumerpg.core.serialization.registerBuilder
 import kotlin.test.Test
 
 

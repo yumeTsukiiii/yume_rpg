@@ -1,34 +1,6 @@
-package fan.yumetsuki.yumerpg.core.game.model
+package fan.yumetsuki.yumerpg.core.builtin.`object`
 
-import fan.yumetsuki.yumerpg.core.model.*
-import fan.yumetsuki.yumerpg.core.utils.RangeProperty
-
-/**
- * 创建一个角色，一个角色是拥有[CharacterAbility]能力的对象
- * 角色可以是敌人，可以是伙伴，也可以是中立（NPC）
- * @return [RpgModel]角色对象
- * @author yumetsuki
- */
-fun character(
-    // 角色名
-    name: String,
-    characterType: CharacterAbility.CharacterType,
-    abilities: List<RpgAbility<*, *, *, *>>
-) : RpgModel {
-
-    return CommonRpgModel(
-        meta = mapMeta(
-            "name" to name
-        ),
-        abilities = listOf(
-            CharacterAbility(characterType),
-            *abilities.filter {
-                it !is CharacterAbility
-            }.toTypedArray()
-        )
-    )
-
-}
+import fan.yumetsuki.yumerpg.core.serialization.*
 
 /**
  * 判断对象是否为角色
@@ -61,7 +33,9 @@ fun RpgModel.isNpc(): Boolean = getAbility<CharacterAbility>()?.value == Charact
 class CharacterAbility(
     override var value: CharacterType,
     override val name: String = "Character",
-    override val alias: String? = "角色"
+    override val alias: String? = "角色",
+    override val id: Long,
+    override val builder: Long
 ): PropertyAbility<CharacterAbility.CharacterType, RpgModel> {
 
     /**

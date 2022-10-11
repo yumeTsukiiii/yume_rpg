@@ -1,9 +1,54 @@
-package fan.yumetsuki.yumerpg.core.protocol
+package fan.yumetsuki.yumerpg.core.serialization
 
-import fan.yumetsuki.yumerpg.core.model.RpgAbility
-import fan.yumetsuki.yumerpg.core.model.RpgModel
+import fan.yumetsuki.yumerpg.core.builder.RpgAbilityBuilder
+import fan.yumetsuki.yumerpg.core.builder.RpgBuildObject
+import fan.yumetsuki.yumerpg.core.builder.RpgBuilder
+import fan.yumetsuki.yumerpg.core.builder.RpgModelBuilder
+
 import kotlinx.serialization.json.*
 import kotlin.reflect.KClass
+
+/**
+ * Rpg 游戏协议，用来实现序列化和反序列化的规则
+ * @author yumetsuki
+ */
+sealed interface RpgProtocol<Content> {
+
+    fun encodeToContent(rpgObject: RpgObject): Content
+
+    fun decodeFromContent(content: Content) : RpgObject
+
+}
+
+class RpgJsonProtocol : RpgProtocol<String> {
+    override fun encodeToContent(rpgObject: RpgObject): String {
+        when(rpgObject) {
+            is RpgObjectArray -> {
+
+            }
+            is RpgModel -> {
+
+            }
+            is RpgAbility<*, *, *, *> -> {
+
+            }
+        }
+        TODO("Not yet implemented")
+    }
+
+    override fun decodeFromContent(content: String): RpgObject {
+        return when(val json = Json.parseToJsonElement(content)) {
+            is JsonArray -> RpgObjectArray(json.filterIsInstance<JsonObject>().map(this::decodeFromJsonObject))
+            is JsonObject -> decodeFromJsonObject(json)
+            is JsonPrimitive -> error("协议内容必须是 JsonArray 或 JsonObject")
+        }
+    }
+
+    private fun decodeFromJsonObject(jsonObject: JsonObject): RpgObject {
+        TODO("Not yet implemented")
+    }
+
+}
 
 /**
  * Rpg 构建协议，协议描述了游戏中所有对象的定义
@@ -47,6 +92,7 @@ class RpgBuildJsonProtocol : RpgBuildProtocol {
     }
 
     override suspend fun load(text: String): List<RpgModel> {
+        JsonPrimitive(1).toString()
         return when(val jsonProtocol = Json.parseToJsonElement(text)) {
             is JsonObject -> listOf(loadRpgModel(jsonProtocol))
             is JsonArray -> jsonProtocol.filterIsInstance<JsonObject>().map(this::loadRpgModel)

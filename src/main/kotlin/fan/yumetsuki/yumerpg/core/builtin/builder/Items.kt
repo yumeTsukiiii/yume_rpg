@@ -1,10 +1,10 @@
-package fan.yumetsuki.yumerpg.core.game.builder
+package fan.yumetsuki.yumerpg.core.builtin.builder
 
-import fan.yumetsuki.yumerpg.core.model.RpgAbility
-import fan.yumetsuki.yumerpg.core.model.RpgModel
-import fan.yumetsuki.yumerpg.core.protocol.RpgAbilityBuilder
-import fan.yumetsuki.yumerpg.core.protocol.RpgBuildObject
-import fan.yumetsuki.yumerpg.core.protocol.RpgModelBuilder
+import fan.yumetsuki.yumerpg.core.serialization.RpgAbility
+import fan.yumetsuki.yumerpg.core.serialization.RpgModel
+import fan.yumetsuki.yumerpg.core.builder.RpgAbilityBuilder
+import fan.yumetsuki.yumerpg.core.builder.RpgBuildObject
+import fan.yumetsuki.yumerpg.core.builder.RpgModelBuilder
 
 /**
  * 消耗品构建器，用于构建消耗品对象
@@ -21,6 +21,16 @@ object ConsumableBuilder : RpgModelBuilder {
 
 }
 
+object PropertyAbilityBuilder: RpgAbilityBuilder {
+    override val id: Long
+        get() = 2L
+
+    override fun build(buildObject: RpgBuildObject?): RpgAbility<*, *, *, *> {
+        TODO("Not yet implemented")
+    }
+
+}
+
 /**
  * 属性值改变能力构建器
  * @see fan.yumetsuki.yumerpg.core.game.model.PropertyChangeAbility
@@ -28,7 +38,7 @@ object ConsumableBuilder : RpgModelBuilder {
  */
 object PropertyChangeAbilityBuilder : RpgAbilityBuilder {
 
-    override val id: Long = 2L
+    override val id: Long = 3L
 
     override fun build(buildObject: RpgBuildObject?): RpgAbility<*, *, *, *> {
         TODO("Not yet implemented")

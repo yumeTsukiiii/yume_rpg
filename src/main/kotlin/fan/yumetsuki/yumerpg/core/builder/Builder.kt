@@ -1,7 +1,7 @@
-package fan.yumetsuki.yumerpg.core.protocol
+package fan.yumetsuki.yumerpg.core.builder
 
-import fan.yumetsuki.yumerpg.core.model.RpgAbility
-import fan.yumetsuki.yumerpg.core.model.RpgModel
+import fan.yumetsuki.yumerpg.core.serialization.RpgAbility
+import fan.yumetsuki.yumerpg.core.serialization.RpgModel
 
 /**
  * 游戏对象构建器，用于解析参数列表构建指定的对象
