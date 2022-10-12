@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.builtin.`object`
+package fan.yumetsuki.yumerpg.core.builtin.element
 
 import fan.yumetsuki.yumerpg.core.serialization.*
 

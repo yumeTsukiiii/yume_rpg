@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.builtin.`object`
+package fan.yumetsuki.yumerpg.core.builtin.element
 
 import fan.yumetsuki.yumerpg.core.builtin.*
 import fan.yumetsuki.yumerpg.core.script.ScriptExecutor
@@ -15,10 +15,8 @@ class CommonPropertyAbility<PropertyType>(
     override var value: PropertyType,
     override val name: String,
     override val alias: String? = null,
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : PropertyAbility<PropertyType, RpgModel>
-
 
 typealias NumberPropertyAbility = CommonPropertyAbility<Number>
 
@@ -35,8 +33,7 @@ class CommonRangePropertyAbility<PropertyType: Comparable<PropertyType>>(
     private val rangeValue: RangeProperty<PropertyType>,
     override val name: String,
     override val alias: String? = null,
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : RangePropertyAbility<PropertyType, RpgModel> {
 
     override var value: PropertyType by rangeValue
@@ -64,8 +61,7 @@ class HoldAbility(
     override var value: List<RpgModel>,
     override val name: String,
     override val alias: String? = null,
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : PropertyAbility<List<RpgModel>, RpgModel>
 
 /**
@@ -75,8 +71,7 @@ class HoldAbility(
 class ScriptAbility<Owner, Target, Param, Result>(
     private val scriptExecutor: ScriptExecutor,
     override val name: String = "Script",
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : RpgAbility<Owner, Target, ScriptAbility.ScriptParam<Param>, Result> {
 
     override suspend fun execute(owner: Owner, target: Target, param: ScriptParam<Param>): Result {
@@ -128,8 +123,7 @@ class PropertyChangeAbility<PropertyType>(
     private val expr: String,
     override val name: String = "PropertyChange",
     override val alias: String? = "用于改变属性值",
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : NoParamCommandAbility<RpgModel, RpgModel> {
 
     override suspend fun execute(owner: RpgModel, target: RpgModel) {
@@ -165,8 +159,7 @@ class RangePropertyChangeAbility<PropertyType: Comparable<PropertyType>>(
     private val minValueExpr: String? = null,
     override val name: String = "RangePropertyChange",
     override val alias: String? = "用于改变带范围的属性值",
-    override val id: Long,
-    override val builder: Long
+    override val id: Long
 ) : NoParamCommandAbility<RpgModel, RpgModel> {
 
     override suspend fun execute(owner: RpgModel, target: RpgModel) {

@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "builder": 2,
+    "param": {
+      "expr": "target.hp.value + target.hp.maxValue * 0.5",
+      "type": "int",
+      "property": "Hp"
+    }
+  }
+]

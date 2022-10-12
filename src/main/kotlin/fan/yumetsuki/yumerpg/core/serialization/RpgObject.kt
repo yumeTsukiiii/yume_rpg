@@ -17,16 +17,6 @@ sealed interface RpgObject {
      */
     val id: Long
 
-    /**
-     * 构建器 id，表示该对象应当由哪个 builder 构建
-     */
-    val builder: Long
-
-    /**
-     * 游戏模型的元信息，通常用来存储一些不常在游戏中被改变的数据，例如人物名，描述等等
-     * 若需要存储游戏对象的属性，请使用[PropertyAbility]
-     */
-    fun meta(): RpgMeta
 }
 
 /**
@@ -39,13 +29,6 @@ class RpgObjectArray(
     override val id: Long
         get() = UNKNOWN_ID
 
-    override val builder: Long
-        get() = UNKNOWN_BUILDER
-
-    override fun meta(): RpgMeta {
-        TODO("Not yet implemented")
-    }
-
     override fun equals(other: Any?): Boolean = content == other
     override fun hashCode(): Int = content.hashCode()
     override fun toString(): String = content.joinToString(prefix = "[", postfix = "]", separator = ",")
@@ -57,6 +40,13 @@ class RpgObjectArray(
  * @author yumetsuki
  */
 interface RpgModel : ScriptSerializable, RpgObject {
+
+    /**
+     * 游戏模型的元信息，通常用来存储一些不常在游戏中被改变的数据，例如人物名，描述等等
+     * 若需要存储游戏对象的属性，请使用[PropertyAbility]
+     */
+    fun meta(): RpgData
+
     /**
      * 游戏模型所具备的能力，例如，某种道具可被使用，也可被装备
      */
@@ -85,11 +75,10 @@ interface RpgModel : ScriptSerializable, RpgObject {
  */
 class CommonRpgModel(
     override val id: Long,
-    override val builder: Long,
-    private val meta: RpgMeta,
+    private val meta: RpgData,
     private val abilities: List<RpgAbility<*, *, *, *>>
 ) : RpgModel {
-    override fun meta(): RpgMeta = meta
+    override fun meta(): RpgData = meta
 
     override fun abilities(): List<RpgAbility<*, *, *, *>> = abilities
 
@@ -150,6 +139,7 @@ inline fun <T: Comparable<T>> RpgModel.changeRangePropertyMin(name: String, onCh
  * @author yumetsuki
  */
 interface RpgAbility<Owner, Target, Param, Result> : RpgObject {
+
     /**
      * 能力名称
      */
@@ -160,6 +150,7 @@ interface RpgAbility<Owner, Target, Param, Result> : RpgObject {
      */
     val alias: String?
         get() = null
+
     /**
      * 执行该能力，为能力的处理逻辑，例如，道具的能力，使用后被作用在[RpgModel]上等
      * @param target 可选的执行目标
@@ -174,6 +165,7 @@ interface RpgAbility<Owner, Target, Param, Result> : RpgObject {
 interface PropertyAbility<PropertyType, Owner>: RpgAbility<Owner, Unit, Unit, PropertyType> {
 
     var value: PropertyType
+
     override suspend fun execute(owner: Owner, target: Unit, param: Unit) = value
 
 }
@@ -207,21 +199,16 @@ interface NoParamCommandAbility<Owner, Target> : CommandAbility<Owner, Target, U
  * 游戏元信息，通过 kv 的方式存储，例如游戏人物会存储 name 信息
  * @author yumetsuki
  */
-interface RpgMeta {
+interface RpgData {
 
     /**
      * 获取元信息
      * @param key 元信息的存储 key
      * @return 返回 key 对应的元数据
      */
-    fun <T> get(key: String): T?
+    fun <T> getOrNull(key: String): T?
 
-    /**
-     * 存储元信息
-     * @param key 元信息的存储 key
-     * @param value 存储在 key 位置对应的元数据
-     */
-    fun set(key: String, value: Any)
+    fun <T> get(key: String) = getOrNull<T>(key)!!
 
     /**
      * 获取所有元信息
@@ -236,19 +223,33 @@ interface RpgMeta {
     fun allKey(): List<String>
 
     companion object {
-        val Empty = object : RpgMeta {
-            override fun <T> get(key: String): T? = null
-            override fun set(key: String, value: Any) = Unit
+        val Empty = object : RpgData {
+            override fun <T> getOrNull(key: String): T? = null
             override fun all(): Map<String, Any> = emptyMap()
             override fun allKey(): List<String> = emptyList()
         }
     }
 }
 
+/**
+ * 可变的[RpgData]，通常用来存储一些状态值
+ * @author yumetsuki
+ */
+interface MutableRpgData: RpgData {
+
+    /**
+     * 存储元信息
+     * @param key 元信息的存储 key
+     * @param value 存储在 key 位置对应的元数据
+     */
+    fun set(key: String, value: Any)
+
+}
+
 @Suppress("UNCHECKED_CAST")
-class MapRpgMeta(
+class MapMutableRpgData(
     vararg data: Pair<String, Any>
-): RpgMeta {
+): MutableRpgData {
 
     init {
         data.forEach { (key, value) ->
@@ -258,7 +259,7 @@ class MapRpgMeta(
 
     private val map: MutableMap<String, Any> = mutableMapOf()
 
-    override fun <T> get(key: String): T? = map[key] as T
+    override fun <T> getOrNull(key: String): T? = map[key] as T
 
     override fun set(key: String, value: Any) {
         map[key] = value
@@ -269,4 +270,5 @@ class MapRpgMeta(
     override fun allKey(): List<String> = map.keys.toList()
 }
 
-fun mapMeta(vararg data: Pair<String, Any>) = MapRpgMeta(*data)
+fun mapRpgMeta(vararg data: Pair<String, Any>) = MapMutableRpgData(*data)
+fun mapRpgData(vararg data: Pair<String, Any>) = mapRpgMeta(*data)

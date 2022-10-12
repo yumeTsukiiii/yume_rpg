@@ -2,19 +2,28 @@ package fan.yumetsuki.yumerpg.core.serialization
 
 import kotlinx.serialization.json.*
 
-/**
- * Rpg 游戏协议，用来实现序列化和反序列化的规则
- * @author yumetsuki
- */
-sealed interface RpgProtocol<Content> {
+sealed interface RpgSerialization<Content, Serializable> {
+    fun encodeToContent(serializable: Serializable): Content
 
-    fun encodeToContent(rpgObject: RpgObject): Content
+}
 
+sealed interface RpgDeserialization<Content, Serializable> {
     fun decodeFromContent(content: Content) : RpgObject
 
 }
 
-class RpgJsonProtocol : RpgProtocol<String> {
+/**
+ * Rpg 对象协议，用来实现游戏中定义的对象的反序列化
+ */
+sealed interface RpgObjectProtocol<Content> : RpgDeserialization<Content, RpgElement>
+
+/**
+ * Rpg 元素协议，用来实现游戏中实际存在对象的序列化和反序列化的规则
+ * @author yumetsuki
+ */
+sealed interface RpgElementProtocol<Content> : RpgSerialization<Content, RpgObject>, RpgDeserialization<Content, RpgObject>
+
+class RpgJsonProtocol : RpgElementProtocol<String> {
     override fun encodeToContent(rpgObject: RpgObject): String {
         when(rpgObject) {
             is RpgObjectArray -> {

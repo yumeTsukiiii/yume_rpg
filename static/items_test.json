@@ -34,14 +34,7 @@
         "description": "一种 HP 药水，用来干什么都行！"
       },
       "abilities": [
-        {
-          "builder": 2,
-          "param": {
-            "expr": "target.hp.value + target.hp.maxValue * 0.5",
-            "type": "int",
-            "property": "Hp"
-          }
-        }
+
       ]
     }
   }
