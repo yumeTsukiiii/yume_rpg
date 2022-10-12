@@ -5,8 +5,7 @@ import fan.yumetsuki.yumerpg.core.utils.putSerializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 
-const val UNKNOWN_BUILDER = Long.MIN_VALUE
-const val UNKNOWN_ID = Long.MIN_VALUE
+const val UNKNOWN_RPG_OBJECT_ID = Long.MIN_VALUE
 
 /**
  * 游戏对象，可被序列化和反序列化
@@ -16,6 +15,11 @@ sealed interface RpgObject {
      * 对象 id，表示其唯一的类型
      */
     val id: Long
+
+    companion object Empty: RpgObject {
+        override val id: Long
+            get() = UNKNOWN_RPG_OBJECT_ID
+    }
 
 }
 
@@ -27,7 +31,7 @@ class RpgObjectArray(
 ) : RpgObject, List<RpgObject> by content {
 
     override val id: Long
-        get() = UNKNOWN_ID
+        get() = UNKNOWN_RPG_OBJECT_ID
 
     override fun equals(other: Any?): Boolean = content == other
     override fun hashCode(): Int = content.hashCode()
