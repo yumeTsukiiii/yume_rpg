@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.builtin.element
+package fan.yumetsuki.yumerpg.core.builtin.rpgobject
 
 import fan.yumetsuki.yumerpg.core.serialization.*
 
@@ -32,7 +32,7 @@ fun RpgModel.isNpc(): Boolean = getAbility<CharacterAbility>()?.value == Charact
  */
 class CharacterAbility(
     override var value: CharacterType,
-    override val id: Long,
+    override val elementId: Long,
     override val name: String ="Character",
     override val alias: String? = "角色"
 ): PropertyAbility<CharacterAbility.CharacterType, RpgModel> {

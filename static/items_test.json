@@ -27,14 +27,39 @@
     ]
   },
   {
+    "id": 1,
+    "type": "item",
     "builder": 1,
     "param": {
-      "meta": {
-        "name": "HP药水",
-        "description": "一种 HP 药水，用来干什么都行！"
-      },
+      "name": "HP药水",
       "abilities": [
-
+        2
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "type": "ability",
+    "builder": 2,
+    "param": {
+      "expr": "target.hp.value + target.hp.value * 50%",
+      "name": "HP恢复"
+    }
+  },
+  {
+    "elementId": 1,
+    "type": "character",
+    "data": {
+      "abilities": [
+        {
+          "elementId": 1,
+          "type": "property_ability",
+          "data": {
+            "name": "hp",
+            "alias": "HP 值",
+            "value": 1
+          }
+        }
       ]
     }
   }

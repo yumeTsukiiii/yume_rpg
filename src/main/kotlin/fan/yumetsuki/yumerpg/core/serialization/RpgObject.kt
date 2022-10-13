@@ -12,12 +12,12 @@ const val UNKNOWN_RPG_OBJECT_ID = Long.MIN_VALUE
  */
 sealed interface RpgObject {
     /**
-     * 对象 id，表示其唯一的类型
+     * [RpgElement] id，表示是由哪一种类型元素构建过来的
      */
-    val id: Long
+    val elementId: Long
 
     companion object Empty: RpgObject {
-        override val id: Long
+        override val elementId: Long
             get() = UNKNOWN_RPG_OBJECT_ID
     }
 
@@ -30,7 +30,7 @@ class RpgObjectArray(
     private val content: List<RpgObject>
 ) : RpgObject, List<RpgObject> by content {
 
-    override val id: Long
+    override val elementId: Long
         get() = UNKNOWN_RPG_OBJECT_ID
 
     override fun equals(other: Any?): Boolean = content == other
@@ -78,7 +78,7 @@ interface RpgModel : ScriptSerializable, RpgObject {
  * @author yumetsuki
  */
 class CommonRpgModel(
-    override val id: Long,
+    override val elementId: Long,
     private val meta: RpgData,
     private val abilities: List<RpgAbility<*, *, *, *>>
 ) : RpgModel {

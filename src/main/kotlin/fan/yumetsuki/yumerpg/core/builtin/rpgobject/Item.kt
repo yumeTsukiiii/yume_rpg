@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.builtin.element
+package fan.yumetsuki.yumerpg.core.builtin.rpgobject
 
 import fan.yumetsuki.yumerpg.core.serialization.*
 
@@ -24,8 +24,7 @@ class CountAbility(
     override val name: String = "count",
     override val alias: String? = "个数",
     override var value: Int,
-    override val id: Long,
-    override val builder: Long
+    override val elementId: Long
 ): PropertyAbility<Int, RpgModel>
 
 /**
@@ -36,8 +35,7 @@ class CountAbility(
 class ConsumableAbility(
     override val name: String = "count",
     override val alias: String? = "消耗品",
-    override val id: Long,
-    override val builder: Long
+    override val elementId: Long
 ) : NoParamCommandAbility<RpgModel, RpgModel> {
 
     override suspend fun execute(owner: RpgModel, target: RpgModel) {
@@ -54,6 +52,7 @@ class ConsumableAbility(
             .forEach {
                 it.execute(owner, target)
             }
+        mutableMapOf<String, String>()["1"] = ""
     }
 
 }
