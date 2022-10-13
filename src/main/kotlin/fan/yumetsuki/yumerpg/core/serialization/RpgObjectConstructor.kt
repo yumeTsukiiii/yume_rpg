@@ -1,7 +1,5 @@
 package fan.yumetsuki.yumerpg.core.serialization
 
-import kotlinx.serialization.json.*
-
 /**
  * [RpgObjectConstructor] 中心，集中管理所有注册在系统中的 Builder
  * 系统内置一部分实现，允许用户外部注入，见[MutableRpgObjConstructorCenter]
@@ -33,7 +31,7 @@ fun <Data> RpgObjConstructorCenter<Data>.getConstructor(id: Long): RpgObjectCons
  * 可能构建出[RpgObject]
  * @author yumetsuki
  */
-interface RpgObjectConstructor<out Data> {
+interface RpgObjectConstructor<Data> {
 
     /**
      * 构建器的 id，用于构建系统全局管理
@@ -44,12 +42,12 @@ interface RpgObjectConstructor<out Data> {
      * 构建一个 [RpgObject] 对象
      * @return [RpgObject] 可能是游戏中的任何对象
      */
-    fun construct(buildObject: RpgObjectContext): RpgObject
+    fun construct(context: RpgObjectContextWithData<Data>): RpgObject
 
     /**
      * 解构一个 [RpgObject] 对象，它将 RpgObject 序列化为 [RpgObjectData]
      */
-    fun deconstruct(rpgObject: RpgObject): RpgObjectData<Data>
+    fun deconstruct(context: RpgObjectContext<Data>, rpgObject: RpgObject): RpgObjectData<Data>
 
 }
 
@@ -62,7 +60,7 @@ interface RpgObjectData<out Data> {
 
 }
 
-class RpgObjectDataArray<out Data>(
+class RpgObjectDataArray<Data>(
     content: List<RpgObjectData<Data>>,
 ): RpgObjectData<Data>, List<RpgObjectData<Data>> by content {
 
@@ -70,13 +68,39 @@ class RpgObjectDataArray<out Data>(
 
 }
 
+interface RpgObjectContext<Data> {
+
+    val elementId: Long
+
+    fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor<Data>? = null
+
+}
+
+class DelegateRpgObjectContext<Data>(
+    override val elementId: Long,
+    delegate: RpgObjectContext<Data>
+) : RpgObjectContext<Data> by delegate
+
+fun <Data> RpgObjectContext<Data>.delegateWithElementId(
+    elementId: Long
+) : RpgObjectContext<Data> = DelegateRpgObjectContext(elementId, this)
+
+/**
+ * 通过 [RpgObjectContext] 解构 [RpgObject]，通常用于一个 [RpgModel] 序列化 [RpgModel.abilities] 时的场景
+ * @author yumetsuki
+ */
+fun <Data> RpgObjectContext<Data>.deconstructRpgObject(rpgObject: RpgObject): RpgObjectData<Data>? {
+    return getConstructorByElementIdOrNull(rpgObject.elementId)?.deconstruct(
+        delegateWithElementId(rpgObject.elementId),
+        rpgObject
+    )
+}
+
 /**
  * 构建器构建时上下文，它封装了单个原始数据对象的协议，用来获取构建时的各种信息
  * @author yumetsuki
  */
-interface RpgObjectContext {
-
-    val elementId: Long
+interface RpgObjectContextWithData<Data> : RpgObjectContext<Data> {
 
     fun getIntOrNull(key: String): Int? = null
 
@@ -87,11 +111,6 @@ interface RpgObjectContext {
     fun getBooleanOrNull(key: String): Boolean? = null
 
     fun getRpgObjectOrNull(key: String): RpgObject? = null
-
-    companion object Empty : RpgObjectContext {
-        override val elementId: Long
-            get() = Long.MIN_VALUE
-    }
 
 }
 

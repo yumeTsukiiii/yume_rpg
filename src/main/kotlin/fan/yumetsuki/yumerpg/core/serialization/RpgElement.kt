@@ -27,13 +27,15 @@ interface MutableRpgElementCenter<Data> : RpgElementCenter<Data> {
  * 游戏元素，它是一个被预定义的游戏中对象类型，例如，游戏中存在「HP 药水」这种道具
  * 在程序中，它是一个元素（类别），一个角色有很多个「HP 药水」，则这些为游戏中实际存在的对象[RpgObject]
  */
-interface RpgElement<Param> {
+interface RpgElement<Data> {
 
     val id: Long
 
     val constructorId: Long
 
-    fun createRpgObject(rpgElementContext: RpgElementContext<Param>): RpgObject
+    val data: Data?
+
+    fun createRpgObject(rpgElementContext: RpgElementContext<Data>): RpgObject
 
 }
 
@@ -59,17 +61,19 @@ const val UNKNOWN_ELEMENT_ID = Long.MIN_VALUE
  * [RpgElement] 数组实现，会创建子[RpgElement]对应的[RpgObject]
  * @author yumetsuki
  */
-class RpgElementArray<Param>(
-    private val content: List<RpgElement<Param>>
-): RpgElement<Param>, List<RpgElement<Param>> by content {
+class RpgElementArray<Data>(
+    private val content: List<RpgElement<Data>>
+): RpgElement<Data>, List<RpgElement<Data>> by content {
 
     override val id: Long = UNKNOWN_ELEMENT_ID
 
     override val constructorId: Long = UNKNOWN_CONSTRUCTOR_ID
 
-    override fun createRpgObject(rpgElementContext: RpgElementContext<Param>): RpgObject {
+    override fun createRpgObject(rpgElementContext: RpgElementContext<Data>): RpgObject {
         return RpgObjectArray(content.map { it.createRpgObject(rpgElementContext) })
     }
+
+    override val data: Data? = null
 
 }
 
