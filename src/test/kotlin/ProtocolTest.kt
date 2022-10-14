@@ -1,4 +1,3 @@
-import fan.yumetsuki.yumerpg.core.serialization.*
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgElementProtocol
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgObjectProtocol
 import fan.yumetsuki.yumerpg.serialization.*

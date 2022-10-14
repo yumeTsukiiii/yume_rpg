@@ -1,6 +1,5 @@
 package fan.yumetsuki.yumerpg.builtin.builder
 
-import fan.yumetsuki.yumerpg.core.serialization.*
 import fan.yumetsuki.yumerpg.serialization.RpgObject
 import fan.yumetsuki.yumerpg.serialization.RpgObjectConstructContext
 import fan.yumetsuki.yumerpg.serialization.RpgObjectConstructor

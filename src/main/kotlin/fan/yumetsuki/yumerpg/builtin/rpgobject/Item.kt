@@ -1,6 +1,5 @@
 package fan.yumetsuki.yumerpg.builtin.rpgobject
 
-import fan.yumetsuki.yumerpg.core.serialization.*
 import fan.yumetsuki.yumerpg.serialization.NoParamCommandAbility
 import fan.yumetsuki.yumerpg.serialization.PropertyAbility
 import fan.yumetsuki.yumerpg.serialization.RpgModel

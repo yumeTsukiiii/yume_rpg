@@ -1,7 +1,6 @@
 package fan.yumetsuki.yumerpg.builtin.rpgobject
 
 import fan.yumetsuki.yumerpg.script.ScriptExecutor
-import fan.yumetsuki.yumerpg.core.serialization.*
 import fan.yumetsuki.yumerpg.serialization.*
 import fan.yumetsuki.yumerpg.utils.putIfIsInstance
 import kotlin.properties.ReadWriteProperty
