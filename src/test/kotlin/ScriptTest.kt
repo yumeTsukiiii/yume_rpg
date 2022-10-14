@@ -1,6 +1,6 @@
 import com.eclipsesource.v8.V8ScriptExecutionException
-import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
-import fan.yumetsuki.yumerpg.core.script.v8.V8ScriptEngine
+import fan.yumetsuki.yumerpg.script.ScriptSerializable
+import fan.yumetsuki.yumerpg.script.v8.V8ScriptEngine
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put

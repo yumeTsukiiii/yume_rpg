@@ -1,10 +1,10 @@
-package fan.yumetsuki.yumerpg.core.builtin.rpgobject
+package fan.yumetsuki.yumerpg.builtin.rpgobject
 
-import fan.yumetsuki.yumerpg.core.builtin.*
-import fan.yumetsuki.yumerpg.core.script.ScriptExecutor
+import fan.yumetsuki.yumerpg.script.ScriptExecutor
 import fan.yumetsuki.yumerpg.core.serialization.*
-import fan.yumetsuki.yumerpg.core.utils.RangeProperty
-import fan.yumetsuki.yumerpg.core.utils.putIfIsInstance
+import fan.yumetsuki.yumerpg.utils.putIfIsInstance
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 /**
  * 属性能力，拥有一个可被改变的值[value]
@@ -183,3 +183,23 @@ typealias DoubleRangePropertyChangeAbility = RangePropertyChangeAbility<Double>
 typealias BooleanRangePropertyChangeAbility = RangePropertyChangeAbility<Boolean>
 
 typealias StringRangePropertyChangeAbility = RangePropertyChangeAbility<String>
+
+/**
+ * 表示范围的一种读写代理类，通常用于 Hp / Mp 等有最大值上限的属性
+ * @author yumetsuki
+ */
+class RangeProperty<PropertyType: Comparable<PropertyType>>(
+    private var value: PropertyType,
+    var maxValue: PropertyType,
+    var minValue: PropertyType
+) : ReadWriteProperty<Any?, PropertyType> {
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): PropertyType {
+        return value
+    }
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: PropertyType) {
+        this.value = maxOf(minOf(value, maxValue), minValue)
+    }
+
+}

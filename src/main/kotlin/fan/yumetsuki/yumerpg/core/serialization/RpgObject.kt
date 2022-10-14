@@ -1,10 +1,5 @@
 package fan.yumetsuki.yumerpg.core.serialization
 
-import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
-import fan.yumetsuki.yumerpg.core.utils.putSerializable
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.buildJsonObject
-
 const val UNKNOWN_RPG_OBJECT_ID = Long.MIN_VALUE
 
 /**
@@ -18,7 +13,7 @@ sealed interface RpgObject {
 
     companion object Empty: RpgObject {
         override val elementId: Long
-            get() = UNKNOWN_RPG_OBJECT_ID
+            get() = UNKNOWN_ELEMENT_ID
     }
 
 }
@@ -43,7 +38,7 @@ class RpgObjectArray(
  * 游戏模型，可以是游戏中的各种物品、人物、地图块等
  * @author yumetsuki
  */
-interface RpgModel : ScriptSerializable, RpgObject {
+interface RpgModel : RpgObject {
 
     /**
      * 游戏模型的元信息，通常用来存储一些不常在游戏中被改变的数据，例如人物名，描述等等
@@ -58,19 +53,6 @@ interface RpgModel : ScriptSerializable, RpgObject {
 
     fun <Ability: RpgAbility<*, *, *, *>> getAbility(abilityClass: Class<Ability>): Ability?
 
-    override fun toScriptObj(): JsonElement = buildJsonObject {
-
-        // 将所有属性持有能力的原始值塞进对象
-        abilities().filterIsInstance<PropertyAbility<*, RpgModel>>().forEach {
-            putSerializable(it.name.lowercase(), it.value)
-        }
-
-        // 将所有原始值类型的 meta 信息塞进对象
-        meta().all().forEach { (k, v) ->
-            putSerializable(k, v)
-        }
-
-    }
 }
 
 /**

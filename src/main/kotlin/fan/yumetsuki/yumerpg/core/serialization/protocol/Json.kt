@@ -10,9 +10,16 @@ import kotlinx.serialization.json.*
  *  "constructor": Long, // 构建对应的 RpgObject 的 builderId，必填
  *  "data": JsonObject? // 参数，由 builder 生成 RpgObject 时动态读取解析
  * }
- * @author
+ * @author yumetsuki
  */
+@Suppress("MemberVisibilityCanBePrivate")
 object JsonRpgElementProtocol : RpgElementProtocol<String, JsonObject> {
+
+    const val ID = "id"
+
+    const val CONSTRUCTOR = "constructor"
+
+    const val DATA = "data"
 
     override fun decodeFromContent(content: String): RpgElement<JsonObject> {
         return when (val json = Json.parseToJsonElement(content)) {
@@ -23,9 +30,9 @@ object JsonRpgElementProtocol : RpgElementProtocol<String, JsonObject> {
     }
 
     private fun decodeToRpgElement(json: JsonObject): RpgElement<JsonObject> {
-        val id = (json["id"] as? JsonPrimitive)?.content?.toLong()!!
-        val builderId = (json["constructor"] as? JsonPrimitive)?.content?.toLong()!!
-        val param = (json["data"] as? JsonObject)
+        val id = (json[ID] as? JsonPrimitive)?.content?.toLong()!!
+        val builderId = (json[CONSTRUCTOR] as? JsonPrimitive)?.content?.toLong()!!
+        val param = (json[DATA] as? JsonObject)
         return JsonRpgElement(id, builderId, param)
     }
 

@@ -1,6 +1,6 @@
-package fan.yumetsuki.yumerpg.core.script
+package fan.yumetsuki.yumerpg.script
 
-import fan.yumetsuki.yumerpg.core.game.GameEngine
+import fan.yumetsuki.yumerpg.game.GameEngine
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive

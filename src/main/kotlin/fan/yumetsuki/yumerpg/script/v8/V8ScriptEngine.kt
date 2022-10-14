@@ -1,12 +1,12 @@
-package fan.yumetsuki.yumerpg.core.script.v8
+package fan.yumetsuki.yumerpg.script.v8
 
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.V8Value
-import fan.yumetsuki.yumerpg.core.script.ScriptEngine
-import fan.yumetsuki.yumerpg.core.script.ScriptRuntimeContext
-import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
+import fan.yumetsuki.yumerpg.script.ScriptEngine
+import fan.yumetsuki.yumerpg.script.ScriptRuntimeContext
+import fan.yumetsuki.yumerpg.script.ScriptSerializable
 import kotlinx.serialization.json.*
 
 /**

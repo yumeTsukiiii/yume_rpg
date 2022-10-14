@@ -1,9 +1,9 @@
-package fan.yumetsuki.yumerpg.core.game
+package fan.yumetsuki.yumerpg.game
 
-import fan.yumetsuki.yumerpg.core.script.ScriptEngine
-import fan.yumetsuki.yumerpg.core.script.ScriptExecutor
-import fan.yumetsuki.yumerpg.core.script.ScriptSerializable
-import fan.yumetsuki.yumerpg.core.script.v8.V8ScriptEngine
+import fan.yumetsuki.yumerpg.script.ScriptEngine
+import fan.yumetsuki.yumerpg.script.ScriptExecutor
+import fan.yumetsuki.yumerpg.script.ScriptSerializable
+import fan.yumetsuki.yumerpg.script.v8.V8ScriptEngine
 
 /**
  * 游戏引擎，代表当前游戏中整个运行环境，全局透出对外 API

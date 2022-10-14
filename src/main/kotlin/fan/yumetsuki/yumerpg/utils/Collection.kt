@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.utils
+package fan.yumetsuki.yumerpg.utils
 
 /**
  * 当[value]为[Value]泛型实例，向[MutableMap]中放入该实例

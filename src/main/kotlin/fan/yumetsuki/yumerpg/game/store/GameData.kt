@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.game.store
+package fan.yumetsuki.yumerpg.game.store
 
 class Item {
 
