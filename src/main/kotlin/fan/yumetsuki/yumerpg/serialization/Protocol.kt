@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.serialization
+package fan.yumetsuki.yumerpg.serialization
 
 /**
  * Rpg 对象协议，用来实现游戏中定义的对象的反序列化

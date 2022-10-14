@@ -1,6 +1,7 @@
 import fan.yumetsuki.yumerpg.core.serialization.*
-import fan.yumetsuki.yumerpg.core.serialization.protocol.JsonRpgElementProtocol
-import fan.yumetsuki.yumerpg.core.serialization.protocol.JsonRpgObjectProtocol
+import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgElementProtocol
+import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgObjectProtocol
+import fan.yumetsuki.yumerpg.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.serialization
+package fan.yumetsuki.yumerpg.serialization
 
 const val UNKNOWN_RPG_OBJECT_ID = Long.MIN_VALUE
 

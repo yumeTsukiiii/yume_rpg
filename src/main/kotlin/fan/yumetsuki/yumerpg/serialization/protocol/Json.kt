@@ -1,6 +1,7 @@
-package fan.yumetsuki.yumerpg.core.serialization.protocol
+package fan.yumetsuki.yumerpg.serialization.protocol
 
 import fan.yumetsuki.yumerpg.core.serialization.*
+import fan.yumetsuki.yumerpg.serialization.*
 import kotlinx.serialization.json.*
 
 /**

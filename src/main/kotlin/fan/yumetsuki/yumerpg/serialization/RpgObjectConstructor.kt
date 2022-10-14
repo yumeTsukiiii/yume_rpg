@@ -1,4 +1,4 @@
-package fan.yumetsuki.yumerpg.core.serialization
+package fan.yumetsuki.yumerpg.serialization
 
 /**
  * [RpgObjectConstructor] 中心，集中管理所有注册在系统中的 Builder
