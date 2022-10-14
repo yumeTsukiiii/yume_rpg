@@ -5,9 +5,9 @@ package fan.yumetsuki.yumerpg.core.serialization
  * 系统内置一部分实现，允许用户外部注入，见[MutableRpgObjConstructorCenter]
  * @author yumetsuki
  */
-interface RpgObjConstructorCenter<Data> {
+interface RpgObjConstructorCenter {
 
-    fun getConstructorOrNull(id: Long): RpgObjectConstructor<Data>?
+    fun getConstructorOrNull(id: Long): RpgObjectConstructor?
 
 }
 
@@ -15,23 +15,22 @@ interface RpgObjConstructorCenter<Data> {
  * 可变的[RpgObjConstructorCenter]
  * @author yumetsuki
  */
-interface MutableRpgObjConstructorCenter<Data> : RpgObjConstructorCenter<Data> {
+interface MutableRpgObjConstructorCenter : RpgObjConstructorCenter {
 
-    fun registerConstructor(constructor: RpgObjectConstructor<Data>)
+    fun registerConstructor(constructor: RpgObjectConstructor)
 
 }
 
 const val UNKNOWN_CONSTRUCTOR_ID = Long.MIN_VALUE
 
-fun <Data> RpgObjConstructorCenter<Data>.getConstructor(id: Long): RpgObjectConstructor<Data> = getConstructorOrNull(id)!!
+fun RpgObjConstructorCenter.getConstructor(id: Long): RpgObjectConstructor = getConstructorOrNull(id)!!
 
 /**
- * 游戏对象构建器，用于解析参数列表构建指定的对象，也可以将对象序列化为[RpgObjectData]
- * 该构建器含有泛型参数[Data]，用于适配各种协议的序列化
+ * 游戏对象构建器，用于解析参数列表构建指定的对象，也可以通过 [RpgObjectDeconstructContext] 将其序列化，具体序列化的对象依赖协议实现
  * 可能构建出[RpgObject]
  * @author yumetsuki
  */
-interface RpgObjectConstructor<Data> {
+interface RpgObjectConstructor {
 
     /**
      * 构建器的 id，用于构建系统全局管理
@@ -42,37 +41,20 @@ interface RpgObjectConstructor<Data> {
      * 构建一个 [RpgObject] 对象
      * @return [RpgObject] 可能是游戏中的任何对象
      */
-    fun construct(context: RpgObjectConstructContext<Data>): RpgObject
+    fun construct(context: RpgObjectConstructContext): RpgObject
 
     /**
-     * 解构一个 [RpgObject] 对象，它将 RpgObject 序列化为 [RpgObjectData]
+     * 解构一个 [RpgObject] 对象，[RpgObjectDeconstructContext.deconstruct] 会将其中 RpgObject 解构为协议存储的对象
      */
-    fun deconstruct(context: RpgObjectDeconstructContext<Data>): RpgObjectData<Data>
-
+    fun deconstruct(context: RpgObjectDeconstructContext)
 }
 
-interface RpgObjectData<out Data> {
+
+interface RpgObjectContext {
 
     val elementId: Long
 
-    val data: Data?
-        get() = null
-
-}
-
-class RpgObjectDataArray<Data>(
-    content: List<RpgObjectData<Data>>,
-): RpgObjectData<Data>, List<RpgObjectData<Data>> by content {
-
-    override val elementId: Long = UNKNOWN_ELEMENT_ID
-
-}
-
-interface RpgObjectContext<Data> {
-
-    val elementId: Long
-
-    fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor<Data>? = null
+    fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor? = null
 
 }
 
@@ -80,7 +62,7 @@ interface RpgObjectContext<Data> {
  * 构建器构建时上下文，它封装了单个原始数据对象的协议，用来获取构建时的各种信息
  * @author yumetsuki
  */
-interface RpgObjectConstructContext<Data> : RpgObjectContext<Data> {
+interface RpgObjectConstructContext : RpgObjectContext {
 
     fun getIntOrNull(key: String): Int? = null
 
@@ -94,44 +76,46 @@ interface RpgObjectConstructContext<Data> : RpgObjectContext<Data> {
 
 }
 
-interface RpgObjectDeconstructContext<Data> : RpgObjectContext<Data> {
+interface RpgObjectDeconstructContext : RpgObjectContext {
 
     val rpgObject: RpgObject
 
+    fun deconstruct(deconstruction: RpgObjectDataBuilder.() -> Unit)
+
 }
 
-inline fun <reified T> RpgObjectDeconstructContext<*>.rpgObject(): T {
+/**
+ * [RpgObject] 存储数据构建器，用于 [RpgObjectConstructor.deconstruct] 时对 RpgObject 的解构
+ * 具体协议应当实现该 Builder 供开发者调用，将 kv 的值转化为具体的数据存储
+ * @author yumetsuki
+ */
+interface RpgObjectDataBuilder {
+
+    fun put(key: String, value: Int)
+
+    fun put(key: String, value: String)
+
+    fun put(key: String, value: Boolean)
+
+    fun put(key: String, value: Double)
+
+    fun put(key: String, value: RpgObject)
+
+}
+
+inline fun <reified T> RpgObjectDeconstructContext.rpgObject(): T {
     return rpgObject as? T ?: error("解构对象必须是一个 ${T::class.simpleName}")
 }
 
-class DelegateRpgObjectDeconstructContext<Data>(
-    override val elementId: Long,
-    delegate: RpgObjectDeconstructContext<Data>
-) : RpgObjectDeconstructContext<Data> by delegate
+class CommonRpgObjConstructorCenter: MutableRpgObjConstructorCenter {
 
-fun <Data> RpgObjectDeconstructContext<Data>.delegateWithElementId(
-    elementId: Long
-) : RpgObjectDeconstructContext<Data> = DelegateRpgObjectDeconstructContext(elementId, this)
+    private val constructors = mutableMapOf<Long, RpgObjectConstructor>()
 
-/**
- * 通过 [RpgObjectContext] 解构 [RpgObject]，通常用于一个 [RpgModel] 序列化 [RpgModel.abilities] 时的场景
- * @author yumetsuki
- */
-fun <Data> RpgObjectDeconstructContext<Data>.deconstructRpgObject(rpgObject: RpgObject): RpgObjectData<Data>? {
-    return getConstructorByElementIdOrNull(rpgObject.elementId)?.deconstruct(
-        delegateWithElementId(rpgObject.elementId),
-    )
-}
-
-class CommonRpgObjConstructorCenter<Data>: MutableRpgObjConstructorCenter<Data> {
-
-    private val constructors = mutableMapOf<Long, RpgObjectConstructor<Data>>()
-
-    override fun registerConstructor(constructor: RpgObjectConstructor<Data>) {
+    override fun registerConstructor(constructor: RpgObjectConstructor) {
         constructors[constructor.id] = constructor
     }
 
-    override fun getConstructorOrNull(id: Long): RpgObjectConstructor<Data>? {
+    override fun getConstructorOrNull(id: Long): RpgObjectConstructor? {
         return constructors[id]
     }
 

@@ -1,6 +1,5 @@
 import fan.yumetsuki.yumerpg.core.serialization.*
 import fan.yumetsuki.yumerpg.core.serialization.protocol.JsonRpgElementProtocol
-import fan.yumetsuki.yumerpg.core.serialization.protocol.JsonRpgObjectData
 import fan.yumetsuki.yumerpg.core.serialization.protocol.JsonRpgObjectProtocol
 import kotlinx.serialization.json.*
 import kotlin.test.Test
@@ -13,12 +12,12 @@ class TestAbility(
     override var value: Int
 ) : PropertyAbility<Int, RpgModel>
 
-class TestAbilityConstructor : RpgObjectConstructor<JsonObject> {
+class TestAbilityConstructor : RpgObjectConstructor {
 
     override val id: Long
         get() = 1
 
-    override fun construct(context: RpgObjectConstructContext<JsonObject>): RpgObject {
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
         return TestAbility(
             elementId = context.elementId,
             name = context.getStringOrNull("name")!!,
@@ -26,23 +25,22 @@ class TestAbilityConstructor : RpgObjectConstructor<JsonObject> {
         )
     }
 
-    override fun deconstruct(context: RpgObjectDeconstructContext<JsonObject>): RpgObjectData<JsonObject> {
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
         val rpgObject = context.rpgObject<TestAbility>()
-
-        return JsonRpgObjectData(id).apply {
-            put("name", JsonPrimitive(rpgObject.name))
-            put("value", JsonPrimitive(rpgObject.value))
+        context.deconstruct {
+            put("name", rpgObject.name)
+            put("value", rpgObject.value)
         }
     }
 
 }
 
-class TestRpgModelConstructor : RpgObjectConstructor<JsonObject> {
+class TestRpgModelConstructor : RpgObjectConstructor {
 
     override val id: Long
         get() = 2
 
-    override fun construct(context: RpgObjectConstructContext<JsonObject>): RpgObject {
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
         return CommonRpgModel(
             elementId = context.elementId,
             meta = mapRpgMeta(
@@ -54,16 +52,12 @@ class TestRpgModelConstructor : RpgObjectConstructor<JsonObject> {
         )
     }
 
-    override fun deconstruct(context: RpgObjectDeconstructContext<JsonObject>): RpgObjectData<JsonObject> {
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
         val rpgObject = context.rpgObject<CommonRpgModel>()
 
-        return JsonRpgObjectData(rpgObject.elementId).apply {
-            put("name", JsonPrimitive(rpgObject.meta().get<String>("name")))
-            put("abilities", RpgObjectDataArray(
-                rpgObject.abilities().map {
-                    context.deconstructRpgObject(it)!!
-                }
-            ))
+        context.deconstruct {
+            put("name", rpgObject.meta().get<String>("name"))
+            put("abilities", RpgObjectArray(rpgObject.abilities()))
         }
     }
 
@@ -130,7 +124,7 @@ class ProtocolTest {
             }
         }
 
-        val rpgObjectConstructorCenter: RpgObjConstructorCenter<JsonObject> = CommonRpgObjConstructorCenter<JsonObject>().apply {
+        val rpgObjectConstructorCenter: RpgObjConstructorCenter = CommonRpgObjConstructorCenter().apply {
             registerConstructor(TestAbilityConstructor())
             registerConstructor(TestRpgModelConstructor())
         }

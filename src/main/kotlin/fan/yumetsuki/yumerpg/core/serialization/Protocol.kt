@@ -31,24 +31,31 @@ interface RpgObjSerializeContext<Data> {
 
     fun getRpgElementOrNull(id: Long): RpgElement<Data>?
 
-    fun getRpgObjConstructorOrNull(id: Long): RpgObjectConstructor<Data>?
+    fun getRpgObjConstructorOrNull(id: Long): RpgObjectConstructor?
 
 }
 
+fun <Data> RpgObjSerializeContext<Data>.getRpgObjConstructorOrNullByElementId(elementId: Long): RpgObjectConstructor? = getRpgElementOrNull(
+    elementId
+)?.constructorId?.let {
+    getRpgObjConstructorOrNull(it)
+}
+
+
 fun <Data> RpgObjSerializeContext<Data>.getRpgElement(id: Long): RpgElement<Data> = getRpgElementOrNull(id)!!
 
-fun <Data> RpgObjSerializeContext<Data>.getRpgObjConstructor(id: Long): RpgObjectConstructor<Data> = getRpgObjConstructorOrNull(id)!!
+fun <Data> RpgObjSerializeContext<Data>.getRpgObjConstructor(id: Long): RpgObjectConstructor = getRpgObjConstructorOrNull(id)!!
 
 class CommonRpgObjSerializeContext<Data>(
     private val rpgElementCenter: RpgElementCenter<Data>,
-    private val rpgObjConstructorCenter: RpgObjConstructorCenter<Data>
+    private val rpgObjConstructorCenter: RpgObjConstructorCenter
 ) : RpgObjSerializeContext<Data> {
 
     override fun getRpgElementOrNull(id: Long): RpgElement<Data>? {
         return rpgElementCenter.getElementOrNull(id)
     }
 
-    override fun getRpgObjConstructorOrNull(id: Long): RpgObjectConstructor<Data>? {
+    override fun getRpgObjConstructorOrNull(id: Long): RpgObjectConstructor? {
         return rpgObjConstructorCenter.getConstructorOrNull(id)
     }
 

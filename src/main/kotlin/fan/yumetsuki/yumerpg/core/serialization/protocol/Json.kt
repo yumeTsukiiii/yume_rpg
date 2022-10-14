@@ -47,11 +47,13 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String, JsonObject> {
         serializable: RpgObject
     ): String {
         return buildJsonObject {
-            rpgObjSerializeContext.getRpgObjConstructor(
-                rpgObjSerializeContext.getRpgElement(serializable.elementId).constructorId
-            ).deconstruct(JsonRpgObjDeconstructContext(serializable.elementId, rpgObjSerializeContext, serializable)).also {
-                put("elementId", it.elementId)
-                it.data?.apply { put("data", this) }
+            put("elementId", serializable.elementId)
+            putJsonObject("data") {
+                rpgObjSerializeContext.getRpgObjConstructor(
+                    rpgObjSerializeContext.getRpgElement(serializable.elementId).constructorId
+                ).deconstruct(
+                    JsonRpgObjDeconstructContext(rpgObjSerializeContext, serializable, this)
+                )
             }
         }.toString()
     }
@@ -107,31 +109,91 @@ class JsonRpgElementContext(
     override fun getRpgElementOrNull(id: Long): RpgElement<JsonObject>?
             = rpgObjSerializeContext.getRpgElementOrNull(id)
 
-    override fun getRpgObjectConstructorOrNull(id: Long): RpgObjectConstructor<JsonObject>?
+    override fun getRpgObjectConstructorOrNull(id: Long): RpgObjectConstructor?
             = rpgObjSerializeContext.getRpgObjConstructorOrNull(id)
 
 }
 
 class JsonRpgObjDeconstructContext(
-    override val elementId: Long,
     private val rpgObjSerializeContext: RpgObjSerializeContext<JsonObject>,
     override val rpgObject: RpgObject,
-) : RpgObjectDeconstructContext<JsonObject> {
+    private val dataBuilder: JsonObjectBuilder
+) : RpgObjectDeconstructContext {
 
-    override fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor<JsonObject>? {
+    override val elementId: Long
+        get() = rpgObject.elementId
+
+    override fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor? {
         return rpgObjSerializeContext.getRpgElementOrNull(elementId)?.let {
             rpgObjSerializeContext.getRpgObjConstructorOrNull(it.constructorId)
         }
     }
+
+    override fun deconstruct(deconstruction: RpgObjectDataBuilder.() -> Unit) {
+        JsonRpgObjectDataBuilder(dataBuilder, rpgObjSerializeContext).deconstruction()
+    }
+
+}
+
+class JsonRpgObjectDataBuilder(
+    private val jsonBuilder: JsonObjectBuilder,
+    private val rpgObjSerializeContext: RpgObjSerializeContext<JsonObject>,
+): RpgObjectDataBuilder {
+    override fun put(key: String, value: Int) {
+        jsonBuilder.put(key, value)
+    }
+
+    override fun put(key: String, value: String) {
+        jsonBuilder.put(key, value)
+    }
+
+    override fun put(key: String, value: Boolean) {
+        jsonBuilder.put(key, value)
+    }
+
+    override fun put(key: String, value: Double) {
+        jsonBuilder.put(key, value)
+    }
+
+    override fun put(key: String, value: RpgObject) {
+        when(value) {
+            is RpgObjectArray -> {
+                jsonBuilder.put(key, JsonArray(
+                    value.map { child ->
+                        buildJsonObject {
+                            putRpgObject(key, child)
+                        }
+                    }.filter {
+                        it.isNotEmpty()
+                    }
+                ))
+            }
+            else -> {
+                jsonBuilder.putRpgObject(key, value)
+            }
+        }
+
+    }
+
+    private fun JsonObjectBuilder.putRpgObject(key: String, value: RpgObject) {
+        rpgObjSerializeContext.getRpgObjConstructorOrNullByElementId(value.elementId)?.let {
+            putJsonObject(key) {
+                it.deconstruct(
+                    JsonRpgObjDeconstructContext(rpgObjSerializeContext, value, this)
+                )
+            }
+        }
+    }
+
 }
 
 class JsonRpgObjConstructContext(
     private val rpgElementContext: RpgElementContext<JsonObject>,
-) : RpgObjectConstructContext<JsonObject> {
+) : RpgObjectConstructContext {
     override val elementId: Long
         get() = rpgElementContext.current.id
 
-    override fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor<JsonObject>? {
+    override fun getConstructorByElementIdOrNull(elementId: Long): RpgObjectConstructor? {
         return rpgElementContext.getRpgElementOrNull(elementId)?.let {
             rpgElementContext.getRpgObjectConstructorOrNull(it.constructorId)
         }
@@ -210,36 +272,8 @@ class JsonRpgObjConstructContext(
         }
     }
 
-    companion object Empty : RpgObjectConstructContext<JsonObject> {
+    companion object Empty : RpgObjectConstructContext {
         override val elementId: Long
             get() = UNKNOWN_CONSTRUCTOR_ID
     }
-}
-
-/**
- * 适配 Json 协议的 [RpgObjectData]，它适用于实现 Json 协议的 [RpgObjectConstructor]
- */
-class JsonRpgObjectData(
-    override val elementId: Long
-) : RpgObjectData<JsonObject> {
-
-    private val jsonData = mutableMapOf<String, JsonElement>()
-    override val data: JsonObject?
-        get() = if (jsonData.isEmpty()) {
-            null
-        } else {
-            JsonObject(jsonData)
-        }
-
-    fun put(key: String, data: JsonElement) {
-        jsonData[key] = data
-    }
-
-    fun put(key: String, data: RpgObjectData<JsonObject>) {
-        jsonData[key] = buildJsonObject {
-            put("elementId", data.elementId)
-            data.data?.let { put("data", it) }
-        }
-    }
-
 }

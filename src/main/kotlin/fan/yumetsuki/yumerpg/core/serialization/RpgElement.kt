@@ -47,7 +47,7 @@ interface RpgElementContext<Data> {
 
     fun getRpgElementOrNull(id: Long): RpgElement<Data>?
 
-    fun getRpgObjectConstructorOrNull(id: Long): RpgObjectConstructor<Data>?
+    fun getRpgObjectConstructorOrNull(id: Long): RpgObjectConstructor?
 
 }
 
@@ -64,7 +64,7 @@ class DelegateRpgElementContext<Data>(
 
 fun <Data> RpgElementContext<Data>.getRpgElement(id: Long): RpgElement<Data> = getRpgElementOrNull(id)!!
 
-fun <Data> RpgElementContext<Data>.getConstructor(id: Long): RpgObjectConstructor<Data> = getRpgObjectConstructorOrNull(id)!!
+fun <Data> RpgElementContext<Data>.getConstructor(id: Long): RpgObjectConstructor = getRpgObjectConstructorOrNull(id)!!
 
 const val UNKNOWN_ELEMENT_ID = Long.MIN_VALUE
 
