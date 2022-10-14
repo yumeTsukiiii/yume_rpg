@@ -255,13 +255,13 @@ class MapMutableRpgData(
     vararg data: Pair<String, Any>
 ): MutableRpgData {
 
+    private val map: MutableMap<String, Any> = mutableMapOf()
+
     init {
         data.forEach { (key, value) ->
             map[key] = value
         }
     }
-
-    private val map: MutableMap<String, Any> = mutableMapOf()
 
     override fun <T> getOrNull(key: String): T? = map[key] as T
 
@@ -274,5 +274,6 @@ class MapMutableRpgData(
     override fun allKey(): List<String> = map.keys.toList()
 }
 
-fun mapRpgMeta(vararg data: Pair<String, Any>) = MapMutableRpgData(*data)
-fun mapRpgData(vararg data: Pair<String, Any>) = mapRpgMeta(*data)
+fun mapRpgData(vararg data: Pair<String, Any>): MutableRpgData = MapMutableRpgData(*data)
+
+fun mapRpgMeta(vararg data: Pair<String, Any>): RpgData = mapRpgData(*data)

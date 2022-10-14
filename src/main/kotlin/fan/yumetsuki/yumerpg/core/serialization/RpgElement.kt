@@ -19,7 +19,7 @@ fun <Data> RpgElementCenter<Data>.getElement(id: Long): RpgElement<Data> = getEl
  */
 interface MutableRpgElementCenter<Data> : RpgElementCenter<Data> {
 
-    fun registerElement(id: Long, element: RpgElement<Data>)
+    fun registerElement(element: RpgElement<Data>)
 
 }
 
@@ -51,6 +51,17 @@ interface RpgElementContext<Data> {
 
 }
 
+/**
+ * 替换必要数据，其他通用方法代理实现 [RpgElementContext] 的 Context
+ * 用于递归创建 RpgObject 的场景
+ * @author yumetsuki
+ */
+class DelegateRpgElementContext<Data>(
+    override val current: RpgElement<Data>,
+    delegate: RpgElementContext<Data>,
+    override val data: Data? = null
+) : RpgElementContext<Data> by delegate
+
 fun <Data> RpgElementContext<Data>.getRpgElement(id: Long): RpgElement<Data> = getRpgElementOrNull(id)!!
 
 fun <Data> RpgElementContext<Data>.getConstructor(id: Long): RpgObjectConstructor<Data> = getRpgObjectConstructorOrNull(id)!!
@@ -81,8 +92,8 @@ class CommonRpgElementCenter<Data>: MutableRpgElementCenter<Data> {
 
     private val builders = mutableMapOf<Long, RpgElement<Data>>()
 
-    override fun registerElement(id: Long, element: RpgElement<Data>) {
-        builders[id] = element
+    override fun registerElement(element: RpgElement<Data>) {
+        builders[element.id] = element
     }
 
     override fun getElementOrNull(id: Long): RpgElement<Data>? {
