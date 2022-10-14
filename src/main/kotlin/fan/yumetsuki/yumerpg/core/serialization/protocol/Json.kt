@@ -46,15 +46,13 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String, JsonObject> {
         rpgObjSerializeContext: RpgObjSerializeContext<JsonObject>,
         serializable: RpgObject
     ): String {
-        return buildJsonObject {
-            put("elementId", serializable.elementId)
-            putJsonObject("data") {
-                rpgObjSerializeContext.getRpgObjConstructor(
-                    rpgObjSerializeContext.getRpgElement(serializable.elementId).constructorId
-                ).deconstruct(
-                    JsonRpgObjDeconstructContext(rpgObjSerializeContext, serializable, this)
-                )
+        return when(serializable) {
+            is RpgObjectArray -> buildJsonArray {
+                serializable.forEach {
+                    add(encodeToJsonObject(rpgObjSerializeContext, it))
+                }
             }
+            else -> encodeToJsonObject(rpgObjSerializeContext, serializable)
         }.toString()
     }
 
@@ -80,6 +78,19 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String, JsonObject> {
             createRpgObject(
                 JsonRpgElementContext(rpgObjSerializeContext, this, data)
             )
+        }
+    }
+
+    private fun encodeToJsonObject(rpgObjSerializeContext: RpgObjSerializeContext<JsonObject>, serializable: RpgObject) : JsonObject {
+        return buildJsonObject {
+            put("elementId", serializable.elementId)
+            putJsonObject("data") {
+                rpgObjSerializeContext.getRpgObjConstructor(
+                    rpgObjSerializeContext.getRpgElement(serializable.elementId).constructorId
+                ).deconstruct(
+                    JsonRpgObjDeconstructContext(rpgObjSerializeContext, serializable, this)
+                )
+            }
         }
     }
 
@@ -159,28 +170,27 @@ class JsonRpgObjectDataBuilder(
         when(value) {
             is RpgObjectArray -> {
                 jsonBuilder.put(key, JsonArray(
-                    value.map { child ->
-                        buildJsonObject {
-                            putRpgObject(key, child)
-                        }
-                    }.filter {
+                    value.map(this::buildRpgObjectJson).filter {
                         it.isNotEmpty()
                     }
                 ))
             }
             else -> {
-                jsonBuilder.putRpgObject(key, value)
+                jsonBuilder.put(key, buildRpgObjectJson(value))
             }
         }
 
     }
 
-    private fun JsonObjectBuilder.putRpgObject(key: String, value: RpgObject) {
-        rpgObjSerializeContext.getRpgObjConstructorOrNullByElementId(value.elementId)?.let {
-            putJsonObject(key) {
-                it.deconstruct(
-                    JsonRpgObjDeconstructContext(rpgObjSerializeContext, value, this)
-                )
+    private fun buildRpgObjectJson(value: RpgObject): JsonObject {
+        return buildJsonObject {
+            rpgObjSerializeContext.getRpgObjConstructorOrNullByElementId(value.elementId)?.let {
+                put("elementId", value.elementId)
+                putJsonObject("data") {
+                    it.deconstruct(
+                        JsonRpgObjDeconstructContext(rpgObjSerializeContext, value, this)
+                    )
+                }
             }
         }
     }

@@ -129,11 +129,13 @@ class ProtocolTest {
             registerConstructor(TestRpgModelConstructor())
         }
 
+        val serializeContext = CommonRpgObjSerializeContext(
+            rpgElementCenter,
+            rpgObjectConstructorCenter
+        )
+
         val rpgObjects = JsonRpgObjectProtocol.decodeFromContent(
-            CommonRpgObjSerializeContext(
-                rpgElementCenter,
-                rpgObjectConstructorCenter
-            ),
+            serializeContext,
             dataContent
         )
 
@@ -150,6 +152,37 @@ class ProtocolTest {
         assertEquals(2, testAbilities[1].value)
         assertEquals("TestAbility", testAbilities[0].name)
         assertEquals("TestAbility", testAbilities[1].name)
+
+
+        testAbilities[0].value = 3
+        testAbilities[1].value = 4
+        val rpgObjectsJsonArray = Json.parseToJsonElement(
+            JsonRpgObjectProtocol.encodeToContent(
+                serializeContext,
+                rpgObjects
+            )
+        )
+        assertTrue(rpgObjectsJsonArray is JsonArray)
+        assertEquals(1, rpgObjectsJsonArray.size)
+        val rpgModelJson = rpgObjectsJsonArray[0].jsonObject
+        assertEquals(2, rpgModelJson["elementId"]?.jsonPrimitive?.intOrNull)
+        val rpgModelData = rpgModelJson["data"]?.jsonObject
+        assertTrue(rpgModelData != null)
+        val abilitiesJson = rpgModelData["abilities"] as? JsonArray
+        assertTrue(abilitiesJson != null)
+        val abilitiesJsonList = abilitiesJson.filterIsInstance<JsonObject>()
+        assertEquals(2, abilitiesJsonList.size)
+
+        val testAbilityFirst = abilitiesJsonList[0]
+        val testAbilitySecond = abilitiesJsonList[1]
+
+        assertEquals(1, testAbilityFirst["elementId"]?.jsonPrimitive?.intOrNull)
+        assertEquals("TestAbility", testAbilityFirst["data"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull)
+        assertEquals(3, testAbilityFirst["data"]?.jsonObject?.get("value")?.jsonPrimitive?.intOrNull)
+
+        assertEquals(1, testAbilitySecond["elementId"]?.jsonPrimitive?.intOrNull)
+        assertEquals("TestAbility", testAbilitySecond["data"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull)
+        assertEquals(4, testAbilitySecond["data"]?.jsonObject?.get("value")?.jsonPrimitive?.intOrNull)
     }
 
 }
