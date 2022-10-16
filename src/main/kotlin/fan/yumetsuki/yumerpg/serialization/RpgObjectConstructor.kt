@@ -62,19 +62,7 @@ interface RpgObjectContext {
  * 构建器构建时上下文，它封装了单个原始数据对象的协议，用来获取构建时的各种信息
  * @author yumetsuki
  */
-interface RpgObjectConstructContext : RpgObjectContext {
-
-    fun getIntOrNull(key: String): Int? = null
-
-    fun getStringOrNull(key: String): String? = null
-
-    fun getDoubleOrNull(key: String): Double? = null
-
-    fun getBooleanOrNull(key: String): Boolean? = null
-
-    fun getRpgObjectOrNull(key: String): RpgObject? = null
-
-}
+interface RpgObjectConstructContext : RpgObjectContext, RpgDataHolder
 
 interface RpgObjectDeconstructContext : RpgObjectContext {
 

@@ -1,3 +1,4 @@
+import fan.yumetsuki.yumerpg.builtin.*
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgElementProtocol
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgObjectProtocol
 import fan.yumetsuki.yumerpg.serialization.*
@@ -112,13 +113,15 @@ class ProtocolTest {
                 ]
             """.trimIndent()
         val elements = JsonRpgElementProtocol.decodeFromContent(elementsContent)
-        assertTrue(elements is RpgElementArray<JsonObject>)
+        assertTrue(elements is RpgElementArray)
         assertEquals(2, elements.size)
-        assertEquals("TestAbility", elements[0].data?.get("name")?.jsonPrimitive?.contentOrNull)
-        assertEquals("TestRpgModel", elements[1].data?.get("name")?.jsonPrimitive?.contentOrNull)
-        assertEquals(1, elements[1].data?.get("abilities")?.jsonArray?.get(0)?.jsonPrimitive?.intOrNull)
+        assertEquals("TestAbility", elements[0].getStringOrNull("name"))
+        assertEquals("TestRpgModel", elements[1].getStringOrNull("name"))
+        assertEquals(1, elements[1].getStringOrNull("abilities")?.let {
+            Json.parseToJsonElement(it).jsonArray.size
+        })
 
-        val rpgElementCenter: RpgElementCenter<JsonObject> = CommonRpgElementCenter<JsonObject>().apply {
+        val rpgElementCenter: RpgElementCenter = CommonRpgElementCenter().apply {
             elements.forEach {
                 registerElement(it)
             }

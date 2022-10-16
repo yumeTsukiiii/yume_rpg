@@ -1,9 +1,9 @@
 package fan.yumetsuki.yumerpg.builtin.rpgobject
 
-import fan.yumetsuki.yumerpg.serialization.NoParamCommandAbility
-import fan.yumetsuki.yumerpg.serialization.PropertyAbility
-import fan.yumetsuki.yumerpg.serialization.RpgModel
-import fan.yumetsuki.yumerpg.serialization.getAbility
+import fan.yumetsuki.yumerpg.builtin.NoParamCommandAbility
+import fan.yumetsuki.yumerpg.builtin.PropertyAbility
+import fan.yumetsuki.yumerpg.builtin.RpgModel
+import fan.yumetsuki.yumerpg.builtin.getAbility
 
 /**
  * 判断该对象是否为消耗品

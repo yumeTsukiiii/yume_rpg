@@ -1,6 +1,6 @@
 package fan.yumetsuki.yumerpg.script
 
-import fan.yumetsuki.yumerpg.game.GameEngine
+import fan.yumetsuki.yumerpg.game.RpgGameEngine
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
@@ -62,7 +62,7 @@ interface ScriptExecutor {
     fun <T> execScript(variables: Map<String, ScriptSerializable>, script: String) : T
 
     /**
-     * @see GameEngine.execScript
+     * @see RpgGameEngine.execScript
      * @param script 被执行的脚本字符串
      */
     fun <T> execScript(script: String) : T
