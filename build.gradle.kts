@@ -34,6 +34,7 @@ dependencies {
     getJ2v8SupportSystem()?.let { j2v8System ->
         implementation("com.eclipsesource.j2v8:j2v8_${j2v8System}:4.6.0")
     } ?: error("仅支持 windows / macOS")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     testImplementation(kotlin("test"))
 }

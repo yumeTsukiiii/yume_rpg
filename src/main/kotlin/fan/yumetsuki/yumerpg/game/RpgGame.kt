@@ -1,89 +1,44 @@
 package fan.yumetsuki.yumerpg.game
 
-import fan.yumetsuki.yumerpg.serialization.*
-
-interface RpgElementLoader {
-
-    suspend fun load(): RpgElement
-
-}
-
-interface RpgObjectLoader {
-
-    suspend fun load(): RpgObject
-
-}
-
-interface Position {
-
-
-
-}
-
-interface Player {
-
-    suspend fun others(): List<Player>
-
-    suspend fun moveTo(position: Position)
-
-}
-
 interface RpgGame {
 
-    suspend fun join(id: Long): Player
+    suspend fun join(account: RpgAccount): RpgPlayer
 
-    suspend fun getPlayer(id: Long): Player
+    suspend fun getPlayer(account: RpgAccount): RpgPlayer
 
-    suspend fun players(): List<Player>
-
-}
-
-interface RpgGameConfig {
-
-    val rpgElementLoader: RpgElementLoader
+    suspend fun players(): List<RpgPlayer>
 
 }
 
-interface RpgGameEngine {
+interface GameStarter {
 
-    suspend fun startGame(gameConfig: RpgGameConfig): RpgGame
+    suspend fun start(): RpgGame
 
 }
 
-class DefaultGame(
-    rpgElement: RpgElement
-): RpgGame {
+class RpgGameConfig {
 
-    val rpgElementCenter: MutableRpgElementCenter = CommonRpgElementCenter()
 
-    init {
-        rpgElementCenter.registerElement(rpgElement)
-    }
 
-    override suspend fun join(id: Long): Player {
+}
+
+class YumeSimpleRpgGame(
+
+) : RpgGame {
+
+
+
+    override suspend fun join(account: RpgAccount): RpgPlayer {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getPlayer(id: Long): Player {
+    override suspend fun getPlayer(account: RpgAccount): RpgPlayer {
         TODO("Not yet implemented")
     }
 
-    override suspend fun players(): List<Player> {
+    override suspend fun players(): List<RpgPlayer> {
         TODO("Not yet implemented")
     }
 
-}
-
-class DefaultGameEngine : RpgGameEngine {
-
-    override suspend fun startGame(gameConfig: RpgGameConfig): RpgGame {
-        val rpgElement = gameConfig.rpgElementLoader.load()
-        TODO()
-    }
 
 }
-
-suspend fun main() {
-
-}
-

@@ -76,11 +76,18 @@ class CommonRpgElementCenter: MutableRpgElementCenter {
     private val builders = mutableMapOf<Long, RpgElement>()
 
     override fun registerElement(element: RpgElement) {
-        builders[element.id] = element
+        when(element) {
+            is RpgElementArray -> element.forEach(this::internalRegisterElement)
+            else -> internalRegisterElement(element)
+        }
     }
 
     override fun getElementOrNull(id: Long): RpgElement? {
         return builders[id]
+    }
+
+    private fun internalRegisterElement(element: RpgElement) {
+        builders[element.id] = element
     }
 
 }
