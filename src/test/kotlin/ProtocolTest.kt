@@ -16,7 +16,7 @@ class TestAbility(
 class TestAbilityConstructor : RpgObjectConstructor {
 
     override val id: Long
-        get() = 1
+        get() = ID
 
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         return TestAbility(
@@ -34,12 +34,62 @@ class TestAbilityConstructor : RpgObjectConstructor {
         }
     }
 
+    companion object {
+        const val ID = 1L
+    }
+
 }
+
+val elementsContent = """
+                [
+                    {
+                        "id": 1,
+                        "constructor": 1,
+                        "data": {
+                            "name": "TestAbility"
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "constructor": 2,
+                        "data": {
+                            "name": "TestRpgModel",
+                            "abilities": [
+                                1
+                            ]
+                        }
+                    }
+                ]
+            """.trimIndent()
+
+val dataContent = """
+                [
+                    {
+                        "elementId": 2,
+                        "data": {
+                            "abilities": [
+                                {
+                                    "elementId": 1,
+                                    "data": {
+                                        "value": 1
+                                    }
+                                },
+                                {
+                                    "elementId": 1,
+                                    "data": {
+                                        "value": 2
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            """.trimIndent()
 
 class TestRpgModelConstructor : RpgObjectConstructor {
 
     override val id: Long
-        get() = 2
+        get() = ID
 
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         return CommonRpgModel(
@@ -60,6 +110,10 @@ class TestRpgModelConstructor : RpgObjectConstructor {
             put("name", rpgObject.meta().get<String>("name"))
             put("abilities", RpgObjectArray(rpgObject.abilities()))
         }
+    }
+
+    companion object {
+        const val ID = 2L
     }
 
 }

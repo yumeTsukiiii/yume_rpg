@@ -3,6 +3,25 @@ package fan.yumetsuki.yumerpg.serialization.protocol
 import fan.yumetsuki.yumerpg.serialization.*
 import kotlinx.serialization.json.*
 
+object JsonByteElementProtocol : RpgElementProtocol<ByteArray> {
+    override fun decodeFromContent(content: ByteArray): RpgElement {
+        return JsonRpgElementProtocol.decodeFromContent(content.decodeToString())
+    }
+
+}
+
+object JsonByteObjectProtocol : RpgObjectProtocol<ByteArray> {
+
+    override fun encodeToContent(rpgObjSerializeContext: RpgObjSerializeContext, serializable: RpgObject): ByteArray {
+        return JsonRpgObjectProtocol.encodeToContent(rpgObjSerializeContext, serializable).encodeToByteArray()
+    }
+
+    override fun decodeFromContent(rpgObjSerializeContext: RpgObjSerializeContext, content: ByteArray): RpgObject {
+        return JsonRpgObjectProtocol.decodeFromContent(rpgObjSerializeContext, content.decodeToString())
+    }
+
+}
+
 /**
  * RpgElement 反序列化协议的 JSON 实现
  * {

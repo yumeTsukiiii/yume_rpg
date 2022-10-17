@@ -12,11 +12,15 @@ interface RpgPlayerCommand {
 
 interface RpgPlayer {
 
+    val account: RpgAccount
+
     suspend fun executeCommand(commandId: Long)
 
     suspend fun data(): RpgObject
 
     suspend fun exit()
+
+    suspend fun save()
 
     suspend fun others(): List<RpgPlayer>
 
