@@ -91,6 +91,16 @@ interface RpgObjectDataBuilder {
 
 }
 
+fun RpgObjectDataBuilder.put(key: String, value: Any) {
+    when(value) {
+        is Int -> put(key, value)
+        is Double -> put(key, value)
+        is String -> put(key, value)
+        is Boolean -> put(key, value)
+        is RpgObject -> put(key, value)
+    }
+}
+
 inline fun <reified T> RpgObjectDeconstructContext.rpgObject(): T {
     return rpgObject as? T ?: error("解构对象必须是一个 ${T::class.simpleName}")
 }

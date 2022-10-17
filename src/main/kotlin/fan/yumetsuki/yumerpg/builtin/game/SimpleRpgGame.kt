@@ -1,6 +1,7 @@
 package fan.yumetsuki.yumerpg.builtin.game
 
 import fan.yumetsuki.yumerpg.RpgGameEngine
+import fan.yumetsuki.yumerpg.builtin.constructor.PropertyAbilityConstructor
 import fan.yumetsuki.yumerpg.game.*
 import fan.yumetsuki.yumerpg.serialization.*
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonByteElementProtocol
@@ -12,6 +13,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+
+val globalRpgObjectConstructors = listOf<RpgObjectConstructor>(
+    PropertyAbilityConstructor()
+)
 
 /**
  * 给 [SimpleRpgGame] 使用的游戏配置
@@ -63,6 +68,12 @@ class SimpleGameStarterConfig(
         private val rpgObjConstructorCenter = CommonRpgObjConstructorCenter()
 
         private var rpgObjectInitializer: suspend RpgObject.() -> Unit = {}
+
+        init {
+            globalRpgObjectConstructors.forEach {
+                rpgObjConstructorCenter.registerConstructor(it)
+            }
+        }
 
         fun registerRpgPlayerCommand(vararg command: RpgPlayerCommand) {
             command.forEach {

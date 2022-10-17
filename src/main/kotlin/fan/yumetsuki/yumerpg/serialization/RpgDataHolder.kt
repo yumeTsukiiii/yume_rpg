@@ -17,3 +17,9 @@ interface RpgDataHolder {
     fun getRpgObjectOrNull(key: String): RpgObject? = null
 
 }
+
+fun RpgDataHolder.getInt(key: String): Int = getIntOrNull(key) ?: error("int $key 不存在")
+fun RpgDataHolder.getString(key: String): String = getStringOrNull(key) ?: error("string $key 不存在")
+fun RpgDataHolder.getDouble(key: String): Double = getDoubleOrNull(key) ?: error("double $key 不存在")
+fun RpgDataHolder.getBoolean(key: String): Boolean = getBooleanOrNull(key) ?: error("boolean $key 不存在")
+fun RpgDataHolder.getRpgObject(key: String): RpgObject = getRpgObjectOrNull(key) ?: error("RpgObject $key 不存在")

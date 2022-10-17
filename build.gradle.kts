@@ -4,12 +4,15 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
+    `maven-publish`
+    `java-library`
 }
 
 group = "fan.yumetsuki"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -45,4 +48,19 @@ tasks.test {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("YumeRpg") {
+            groupId = "fan.yumetsuki"
+            artifactId = "yume-rpg"
+
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }
