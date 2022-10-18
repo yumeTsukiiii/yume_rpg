@@ -2,19 +2,13 @@ package fan.yumetsuki.yumerpg.game
 
 import fan.yumetsuki.yumerpg.serialization.RpgObject
 
-interface RpgPlayerCommand {
-
-    val id: Long
-
-    suspend fun onExecute(player: RpgPlayer)
-
-}
-
+/**
+ * 游戏玩家，主要的游戏业务的操作入口
+ * @author yumetsuki
+ */
 interface RpgPlayer {
 
     val account: RpgAccount
-
-    suspend fun executeCommand(commandId: Long)
 
     suspend fun data(): RpgObject
 

@@ -2,8 +2,6 @@ import fan.yumetsuki.yumerpg.RpgGameEngine
 import fan.yumetsuki.yumerpg.builtin.RpgModel
 import fan.yumetsuki.yumerpg.builtin.game.join
 import fan.yumetsuki.yumerpg.builtin.game.startGame
-import fan.yumetsuki.yumerpg.game.RpgPlayer
-import fan.yumetsuki.yumerpg.game.RpgPlayerCommand
 import fan.yumetsuki.yumerpg.serialization.RpgObjectArray
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -40,21 +38,6 @@ class SimpleGameTest {
                     TestAbilityConstructor(),
                     TestRpgModelConstructor()
                 )
-                registerRpgPlayerCommand(
-                    object : RpgPlayerCommand {
-                        override val id: Long
-                            get() = 1
-
-                        override suspend fun onExecute(player: RpgPlayer) {
-                            val model = (player.data() as RpgObjectArray)[0] as RpgModel
-                            assertEquals("TestRpgModel", model.meta().get<String>("name"))
-                            model.abilities().filterIsInstance<TestAbility>().forEach {
-                                it.value = 114514
-                            }
-                        }
-
-                    }
-                )
                 onInitRpgObject {
                     assertTrue(this is RpgObjectArray)
                     val rpgModel = this[0]
@@ -70,7 +53,13 @@ class SimpleGameTest {
                 saveFile.readBytes().decodeToString()
             ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("abilities")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
             assertEquals(player, game.getPlayerOrNull(player.account))
-            player.executeCommand(1)
+
+            val model = (player.data() as RpgObjectArray)[0] as RpgModel
+            assertEquals("TestRpgModel", model.meta().get<String>("name"))
+            model.abilities().filterIsInstance<TestAbility>().forEach {
+                it.value = 114514
+            }
+
             player.save()
             player.exit()
             assertEquals(null, game.getPlayerOrNull(player.account))

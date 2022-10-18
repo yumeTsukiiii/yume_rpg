@@ -36,10 +36,6 @@ class SimpleGameStarterConfig(
      */
     val rpgElementFiles: List<File>,
     /**
-     * [RpgPlayer] 可执行的命令集合，为主要业务逻辑
-     */
-    val rpgPlayerCommands: Map<Long, RpgPlayerCommand>,
-    /**
      * [RpgObjectConstructor] 配置
      */
     val rpgObjConstructorCenter: RpgObjConstructorCenter,
@@ -63,8 +59,6 @@ class SimpleGameStarterConfig(
 
         var rpgObjectProtocol: RpgObjectProtocol<ByteArray> = JsonByteObjectProtocol
 
-        private val rpgPlayerCommands = mutableMapOf<Long, RpgPlayerCommand>()
-
         private val rpgObjConstructorCenter = CommonRpgObjConstructorCenter()
 
         private var rpgObjectInitializer: suspend RpgObject.() -> Unit = {}
@@ -72,12 +66,6 @@ class SimpleGameStarterConfig(
         init {
             globalRpgObjectConstructors.forEach {
                 rpgObjConstructorCenter.registerConstructor(it)
-            }
-        }
-
-        fun registerRpgPlayerCommand(vararg command: RpgPlayerCommand) {
-            command.forEach {
-                rpgPlayerCommands[it.id] = it
             }
         }
 
@@ -95,7 +83,6 @@ class SimpleGameStarterConfig(
             rpgElementProtocol,
             rpgObjectProtocol,
             rpgElementFiles,
-            rpgPlayerCommands,
             rpgObjConstructorCenter,
             defaultDataFile,
             rpgObjectInitializer
@@ -124,7 +111,6 @@ class SimpleGameStarter(
             },
             rpgObjConstructorCenter,
             rpgObjectProtocol,
-            rpgPlayerCommands,
             defaultDataFile,
             rpgObjectInitializer
         )
@@ -136,14 +122,9 @@ class SimpleRpgAccount(override val id: Long) :RpgAccount
 
 class SimpleRpgPlayer(
     override val account: RpgAccount,
-    private val commands: Map<Long, RpgPlayerCommand>,
     private val data: RpgObject,
     private val game: RpgGame
 ): RpgPlayer {
-
-    override suspend fun executeCommand(commandId: Long) {
-        commands[commandId]?.onExecute(this)
-    }
 
     override suspend fun data(): RpgObject = data
 
@@ -164,15 +145,13 @@ class SimpleRpgPlayer(
 }
 
 /**
- * 一个基于文件存档和命令系统的简单 [RpgGame]
- * 支持可配置的文件存储协议，通过命令系统由调用方自主构建游戏功能 [RpgPlayerCommand]
+ * 一个基于文件存档和命令系统的简单 [RpgGame]，支持可配置的文件存储协议
  * @author yumetsuki
  */
 class SimpleRpgGame(
     private val rpgElementCenter: RpgElementCenter,
     private val rpgObjConstructorCenter: RpgObjConstructorCenter,
     private val rpgObjectProtocol: RpgObjectProtocol<ByteArray>,
-    private val commands: Map<Long, RpgPlayerCommand>,
     private val defaultDataFile: File,
     private val rpgObjectInitializer: suspend RpgObject.() -> Unit
 ): RpgGame {
@@ -189,7 +168,6 @@ class SimpleRpgGame(
     override suspend fun join(account: RpgAccount): RpgPlayer {
         return SimpleRpgPlayer(
             account,
-            commands,
             account.getSaveFile().readBytes().takeIf {
                 it.isNotEmpty()
             }?.let {
