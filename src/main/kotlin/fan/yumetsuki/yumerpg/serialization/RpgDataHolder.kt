@@ -23,3 +23,18 @@ fun RpgDataHolder.getString(key: String): String = getStringOrNull(key) ?: error
 fun RpgDataHolder.getDouble(key: String): Double = getDoubleOrNull(key) ?: error("double $key 不存在")
 fun RpgDataHolder.getBoolean(key: String): Boolean = getBooleanOrNull(key) ?: error("boolean $key 不存在")
 fun RpgDataHolder.getRpgObject(key: String): RpgObject = getRpgObjectOrNull(key) ?: error("RpgObject $key 不存在")
+
+inline fun <reified T> RpgDataHolder.getOrNull(key: String): T? {
+    return when(T::class) {
+        Int::class -> getIntOrNull(key) as T
+        Double::class -> getDoubleOrNull(key) as T
+        Boolean::class -> getBooleanOrNull(key) as T
+        String::class -> getStringOrNull(key) as T
+        RpgObject::class -> getRpgObjectOrNull(key) as T
+        else -> error("不支持的数据类型 ${T::class}")
+    }
+}
+
+inline fun <reified T> RpgDataHolder.get(key: String): T {
+    return getOrNull<T>(key)!!
+}

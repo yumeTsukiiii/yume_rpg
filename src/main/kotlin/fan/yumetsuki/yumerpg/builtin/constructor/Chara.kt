@@ -1,9 +1,8 @@
 package fan.yumetsuki.yumerpg.builtin.constructor
 
 import fan.yumetsuki.yumerpg.builtin.PropertyAbility
-import fan.yumetsuki.yumerpg.builtin.rpgobject.BooleanPropertyAbility
-import fan.yumetsuki.yumerpg.builtin.rpgobject.NumberPropertyAbility
-import fan.yumetsuki.yumerpg.builtin.rpgobject.StringPropertyAbility
+import fan.yumetsuki.yumerpg.builtin.RangePropertyAbility
+import fan.yumetsuki.yumerpg.builtin.rpgobject.*
 import fan.yumetsuki.yumerpg.serialization.*
 
 /**
@@ -43,6 +42,84 @@ class PropertyAbilityConstructor : RpgObjectConstructor {
         const val TYPE = "type"
         const val ALIAS = "alias"
         const val VALUE = "value"
+
+    }
+
+}
+
+/**
+ * 范围属性能力构建器，通常用于给某个角色添加可变的带上下限属性值，例如可变的 HP / MP
+ * @author yumetsuki
+ */
+class RangePropertyAbilityConstructor : RpgObjectConstructor {
+
+    override val id: Long = ID
+
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
+        val type = context.getString(TYPE)
+        val name = context.getString(NAME)
+        val alias = context.getStringOrNull(ALIAS)
+        return when(type) {
+            "int" -> {
+                val maxValue = context.getInt(MAX_VALUE)
+                val minValue = context.getInt(MIN_VALUE)
+                val value = context.getIntOrNull(VALUE) ?: maxValue
+                IntRangePropertyAbility(
+                    RangeProperty(value, maxValue, minValue),
+                    name, alias, context.elementId
+                )
+            }
+            "double" -> {
+                val maxValue = context.getDouble(MAX_VALUE)
+                val minValue = context.getDouble(MIN_VALUE)
+                val value = context.getDoubleOrNull(VALUE) ?: maxValue
+                DoubleRangePropertyAbility(
+                    RangeProperty(value, maxValue, minValue),
+                    name, alias, context.elementId
+                )
+            }
+            "string" -> {
+                val maxValue = context.getString(MAX_VALUE)
+                val minValue = context.getString(MIN_VALUE)
+                val value = context.getStringOrNull(VALUE) ?: maxValue
+                StringRangePropertyAbility(
+                    RangeProperty(value, maxValue, minValue),
+                    name, alias, context.elementId
+                )
+            }
+            "boolean" -> {
+                val maxValue = context.getBoolean(MAX_VALUE)
+                val minValue = context.getBoolean(MIN_VALUE)
+                val value = context.getBooleanOrNull(VALUE) ?: maxValue
+                BooleanRangePropertyAbility(
+                    RangeProperty(value, maxValue, minValue),
+                    name, alias, context.elementId
+                )
+            }
+            else -> error("不支持的属性类型 $type")
+        }
+    }
+
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
+        context.deconstruct {
+            context.rpgObject<RangePropertyAbility<*, *>>().value.let {
+                put(VALUE, it)
+                put(MAX_VALUE, it)
+                put(MIN_VALUE, it)
+            }
+        }
+    }
+
+    companion object {
+
+        const val ID = 2L
+
+        const val NAME = "name"
+        const val TYPE = "type"
+        const val ALIAS = "alias"
+        const val VALUE = "value"
+        const val MAX_VALUE = "maxValue"
+        const val MIN_VALUE = "minValue"
 
     }
 

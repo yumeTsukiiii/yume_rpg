@@ -11,7 +11,7 @@ interface RpgElementCenter {
 
 }
 
-fun <Data> RpgElementCenter.getElement(id: Long): RpgElement = getElementOrNull(id)!!
+fun RpgElementCenter.getElement(id: Long): RpgElement = getElementOrNull(id)!!
 
 /**
  * 可变的[RpgElementCenter]
