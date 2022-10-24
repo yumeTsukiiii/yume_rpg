@@ -124,3 +124,33 @@ class RangePropertyAbilityConstructor : RpgObjectConstructor {
     }
 
 }
+
+/**
+ * 属性改变能力构造器，通常用于一些消耗品的功能，比如 hp 回复
+ * @author yumetsuki
+ */
+class PropertyChangeAbilityConstructor : RpgObjectConstructor {
+
+    override val id: Long = ID
+
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
+        return PropertyChangeAbility<Comparable<*>>(
+            context.getString(PROPERTY),
+            context.getString(EXPR),
+            elementId = context.elementId
+        )
+    }
+
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
+        // do nothing
+        // 属性改变并不需要被存储，它的 property 和 expr 应当在 element 描述中配置，不应被改变
+    }
+
+    companion object {
+        const val ID = 3L
+        const val PROPERTY = "property"
+        const val EXPR = "expr"
+    }
+
+
+}

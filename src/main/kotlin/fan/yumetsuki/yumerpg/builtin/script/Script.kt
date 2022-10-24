@@ -1,8 +1,4 @@
-package fan.yumetsuki.yumerpg.script
-
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonPrimitive
+package fan.yumetsuki.yumerpg.builtin.script
 
 /**
  * 表达式引擎，用于执行道具，攻击等数值的计算
@@ -42,21 +38,5 @@ interface ScriptRuntimeContext {
      * 销毁上下文，销毁后则无法再执行脚本
      */
     fun destroy()
-
-}
-
-interface ScriptExecutor {
-
-    /**
-     * 执行脚本
-     * @param variables 表达式中的全局变量
-     * @param script 被执行的脚本字符串
-     */
-    fun <T> execScript(variables: Map<String, Any>, script: String) : T
-
-    /**
-     * @param script 被执行的脚本字符串
-     */
-    fun <T> execScript(script: String) : T
 
 }

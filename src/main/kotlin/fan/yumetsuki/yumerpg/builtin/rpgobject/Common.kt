@@ -1,7 +1,9 @@
 package fan.yumetsuki.yumerpg.builtin.rpgobject
 
 import fan.yumetsuki.yumerpg.builtin.*
-import fan.yumetsuki.yumerpg.script.ScriptExecutor
+import fan.yumetsuki.yumerpg.builtin.script.ScriptEngine
+import fan.yumetsuki.yumerpg.builtin.script.v8.V8ScriptEngine
+import fan.yumetsuki.yumerpg.builtin.script.v8.registerRpgModel
 import fan.yumetsuki.yumerpg.serialization.*
 import fan.yumetsuki.yumerpg.utils.putIfIsInstance
 import kotlin.properties.ReadWriteProperty
@@ -70,18 +72,32 @@ class HoldAbility(
  * 脚本执行能力，通常用于 HP 回复等计算表达式执行
  * @author yumetsuki
  */
-class ScriptAbility<Owner, Target, Param, Result>(
-    private val scriptExecutor: ScriptExecutor,
+class ScriptAbility<Owner: Any, Target: Any, Param: Any?, Result>(
+    private val scriptEngine: ScriptEngine = V8ScriptEngine,
     override val name: String = "Script",
     override val elementId: Long
 ) : RpgAbility<Owner, Target, ScriptAbility.ScriptParam<Param>, Result> {
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun execute(owner: Owner, target: Target, param: ScriptParam<Param>): Result {
-        return scriptExecutor.execScript(buildMap {
-            putIfIsInstance("owner", owner)
-            putIfIsInstance("target", owner)
-            putIfIsInstance("param", param.param)
-        }, param.script)
+        return scriptEngine.createRuntimeContext().run {
+            if (owner is RpgModel) {
+                registerRpgModel("owner", owner)
+            } else {
+                registerVariable("owner", owner)
+            }
+            if (target is RpgModel) {
+                registerRpgModel("target", target)
+            } else {
+                registerVariable("target", target)
+            }
+            if (param.param != null) {
+                registerVariable("param", param.param)
+            }
+            exec(param.script).apply {
+                destroy()
+            }
+        } as Result
     }
 
     class ScriptParam<P>(
@@ -93,7 +109,7 @@ class ScriptAbility<Owner, Target, Param, Result>(
 /**
  * 仅传递 script 字符串的[ScriptAbility]执行方法，参数可选
  */
-suspend fun <Owner, Target, Result> ScriptAbility<Owner, Target, Any?, Result>.execute(
+suspend fun <Owner: Any, Target: Any, Result> ScriptAbility<Owner, Target, Any?, Result>.execute(
     owner: Owner, target: Target, script: String, param: Any? = null
 ): Result {
     return execute(owner, target, ScriptAbility.ScriptParam(script, param))
@@ -102,7 +118,7 @@ suspend fun <Owner, Target, Result> ScriptAbility<Owner, Target, Any?, Result>.e
 /**
  * 执行脚本的便捷方法
  */
-suspend fun <Target, Result> RpgModel.execScript(
+suspend fun <Target: Any, Result> RpgModel.execScript(
     target: Target, script: String, param: Any? = null
 ): Result? {
     return execAbility<ScriptAbility<RpgModel, Target, Any?, Result>, _, _, _>(

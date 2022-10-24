@@ -1,18 +1,23 @@
-package fan.yumetsuki.yumerpg.script.v8
+package fan.yumetsuki.yumerpg.builtin.script.v8
 
 import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.V8Value
-import fan.yumetsuki.yumerpg.script.ScriptEngine
-import fan.yumetsuki.yumerpg.script.ScriptRuntimeContext
+import fan.yumetsuki.yumerpg.builtin.PropertyAbility
+import fan.yumetsuki.yumerpg.builtin.RpgModel
+import fan.yumetsuki.yumerpg.builtin.script.ScriptEngine
+import fan.yumetsuki.yumerpg.builtin.script.ScriptRuntimeContext
+import fan.yumetsuki.yumerpg.serialization.RpgObject
+import fan.yumetsuki.yumerpg.serialization.RpgObjectArray
+import fan.yumetsuki.yumerpg.utils.put
 import kotlinx.serialization.json.*
 
 /**
  * 基于 V8 的表达式执行引擎
  * @author yumetsuki
  */
-class V8ScriptEngine : ScriptEngine {
+object V8ScriptEngine : ScriptEngine {
 
     override fun createRuntimeContext(): ScriptRuntimeContext = V8ScriptRuntimeContext(V8.createV8Runtime())
 
@@ -122,4 +127,14 @@ class V8ScriptRuntimeContext(
             }
         }
     }
+}
+
+fun ScriptRuntimeContext.registerRpgModel(name: String, value: RpgModel) {
+
+    registerVariable(name, buildJsonObject {
+        value.abilities().filterIsInstance<PropertyAbility<*, RpgModel>>().forEach {
+            put(it.name, it.value)
+        }
+    })
+
 }
