@@ -1,7 +1,5 @@
 import com.eclipsesource.v8.V8ScriptExecutionException
-import fan.yumetsuki.yumerpg.script.ScriptSerializable
 import fan.yumetsuki.yumerpg.script.v8.V8ScriptEngine
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
@@ -23,15 +21,11 @@ class ScriptTest {
     fun testRegisterVariable() {
         val exprEngine = V8ScriptEngine()
         exprEngine.createRuntimeContext().apply {
-            registerVariable("owner", object : ScriptSerializable {
-                override fun toScriptObj(): JsonElement {
-                    return buildJsonObject {
-                        putJsonObject("hp") {
-                            put("value", 10)
-                            put("max", 20)
-                            put("min", 0)
-                        }
-                    }
+            registerVariable("owner", buildJsonObject {
+                putJsonObject("hp") {
+                    put("value", 10)
+                    put("max", 20)
+                    put("min", 0)
                 }
             })
             assertEquals(10, exec("owner.hp.value"))

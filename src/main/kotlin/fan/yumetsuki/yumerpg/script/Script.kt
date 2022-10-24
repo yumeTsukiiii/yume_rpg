@@ -29,7 +29,7 @@ interface ScriptRuntimeContext {
      * @param name 变量名
      * @param value 变量值
      */
-    fun registerVariable(name: String, value: ScriptSerializable)
+    fun registerVariable(name: String, value: Any)
 
     /**
      * 执行脚本
@@ -45,12 +45,6 @@ interface ScriptRuntimeContext {
 
 }
 
-interface ScriptSerializable {
-
-    fun toScriptObj(): JsonElement
-
-}
-
 interface ScriptExecutor {
 
     /**
@@ -58,19 +52,11 @@ interface ScriptExecutor {
      * @param variables 表达式中的全局变量
      * @param script 被执行的脚本字符串
      */
-    fun <T> execScript(variables: Map<String, ScriptSerializable>, script: String) : T
+    fun <T> execScript(variables: Map<String, Any>, script: String) : T
 
     /**
      * @param script 被执行的脚本字符串
      */
     fun <T> execScript(script: String) : T
 
-}
-
-fun Any?.encodeToScriptObj(): JsonElement = when(this) {
-    is Number -> JsonPrimitive(this)
-    is String -> JsonPrimitive(this)
-    is Boolean -> JsonPrimitive(this)
-    is ScriptSerializable -> toScriptObj()
-    else -> JsonNull
 }

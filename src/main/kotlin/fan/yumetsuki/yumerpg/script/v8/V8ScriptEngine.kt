@@ -6,7 +6,6 @@ import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.V8Value
 import fan.yumetsuki.yumerpg.script.ScriptEngine
 import fan.yumetsuki.yumerpg.script.ScriptRuntimeContext
-import fan.yumetsuki.yumerpg.script.ScriptSerializable
 import kotlinx.serialization.json.*
 
 /**
@@ -29,13 +28,13 @@ class V8ScriptRuntimeContext(
 
     private val refVariables = mutableListOf<V8Object>()
 
-    override fun registerVariable(name: String, value: ScriptSerializable) {
+    override fun registerVariable(name: String, value: Any) {
         if (v8.isReleased) {
             return
         }
-        // 将 value 转化为可能的 V8Object，这是一个递归转化 Json -> 8 的过程
+        // 将 value 转化为可能的 V8Object，这是一个递归转化 Json -> v8 的过程
         // 若它直接是一个原始值（Int、Double），则直接将其添加到 v8 中
-        v8.add(name, value.toScriptObj())
+        v8.add(name, value)
     }
 
     override fun exec(script: String): Any? {
