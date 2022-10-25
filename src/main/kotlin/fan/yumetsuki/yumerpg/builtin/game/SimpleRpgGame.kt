@@ -2,6 +2,8 @@ package fan.yumetsuki.yumerpg.builtin.game
 
 import fan.yumetsuki.yumerpg.RpgGameEngine
 import fan.yumetsuki.yumerpg.builtin.constructor.PropertyAbilityConstructor
+import fan.yumetsuki.yumerpg.builtin.constructor.PropertyChangeAbilityConstructor
+import fan.yumetsuki.yumerpg.builtin.constructor.RangePropertyAbilityConstructor
 import fan.yumetsuki.yumerpg.game.*
 import fan.yumetsuki.yumerpg.serialization.*
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonByteElementProtocol
@@ -14,8 +16,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 
-val globalRpgObjectConstructors = listOf<RpgObjectConstructor>(
-    PropertyAbilityConstructor()
+val globalRpgObjectConstructors: List<RpgObjectConstructor> = listOf(
+    PropertyAbilityConstructor(),
+    RangePropertyAbilityConstructor(),
+    PropertyChangeAbilityConstructor()
 )
 
 /**
