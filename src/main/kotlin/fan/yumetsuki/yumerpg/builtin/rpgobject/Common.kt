@@ -5,7 +5,6 @@ import fan.yumetsuki.yumerpg.builtin.script.ScriptEngine
 import fan.yumetsuki.yumerpg.builtin.script.v8.V8ScriptEngine
 import fan.yumetsuki.yumerpg.builtin.script.v8.registerRpgModel
 import fan.yumetsuki.yumerpg.serialization.*
-import fan.yumetsuki.yumerpg.utils.putIfIsInstance
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 

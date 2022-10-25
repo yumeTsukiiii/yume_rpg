@@ -11,8 +11,6 @@ import fan.yumetsuki.yumerpg.serialization.*
  */
 class PropertyAbilityConstructor : RpgObjectConstructor {
 
-    override val id: Long = ID
-
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         val type = context.getString(TYPE)
         val name = context.getString(NAME)
@@ -36,8 +34,6 @@ class PropertyAbilityConstructor : RpgObjectConstructor {
 
     companion object {
 
-        const val ID = 1L
-
         const val NAME = "name"
         const val TYPE = "type"
         const val ALIAS = "alias"
@@ -52,8 +48,6 @@ class PropertyAbilityConstructor : RpgObjectConstructor {
  * @author yumetsuki
  */
 class RangePropertyAbilityConstructor : RpgObjectConstructor {
-
-    override val id: Long = ID
 
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         val type = context.getString(TYPE)
@@ -112,8 +106,6 @@ class RangePropertyAbilityConstructor : RpgObjectConstructor {
 
     companion object {
 
-        const val ID = 2L
-
         const val NAME = "name"
         const val TYPE = "type"
         const val ALIAS = "alias"
@@ -131,8 +123,6 @@ class RangePropertyAbilityConstructor : RpgObjectConstructor {
  */
 class PropertyChangeAbilityConstructor : RpgObjectConstructor {
 
-    override val id: Long = ID
-
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         return PropertyChangeAbility<Comparable<*>>(
             context.getString(PROPERTY),
@@ -147,7 +137,6 @@ class PropertyChangeAbilityConstructor : RpgObjectConstructor {
     }
 
     companion object {
-        const val ID = 3L
         const val PROPERTY = "property"
         const val EXPR = "expr"
     }
