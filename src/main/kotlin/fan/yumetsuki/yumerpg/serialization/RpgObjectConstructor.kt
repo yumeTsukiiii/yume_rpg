@@ -42,7 +42,7 @@ interface RpgObjectConstructor {
      * 构建器的 id，用于构建系统全局管理
      */
     val id: Long
-        get() = name.longHashCode()
+        get() = getId(name)
 
     /**
      * 构建一个 [RpgObject] 对象
@@ -54,6 +54,10 @@ interface RpgObjectConstructor {
      * 解构一个 [RpgObject] 对象，[RpgObjectDeconstructContext.deconstruct] 会将其中 RpgObject 解构为协议存储的对象
      */
     fun deconstruct(context: RpgObjectDeconstructContext)
+
+    companion object {
+        fun getId(name: String) : Long = name.longHashCode()
+    }
 }
 
 

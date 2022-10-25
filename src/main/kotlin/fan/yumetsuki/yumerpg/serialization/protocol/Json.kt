@@ -26,7 +26,7 @@ object JsonByteObjectProtocol : RpgObjectProtocol<ByteArray> {
  * RpgElement 反序列化协议的 JSON 实现
  * {
  *  "id": Long, // RpgElement id，必填
- *  "constructor": Long, // 构建对应的 RpgObject 的 builderId，必填
+ *  "constructor": Long|String, // 构建对应的 RpgObject 的 Constructor Id or Constructor Name，必填
  *  "data": JsonObject? // 参数，由 builder 生成 RpgObject 时动态读取解析
  * }
  * @author yumetsuki
@@ -50,9 +50,10 @@ object JsonRpgElementProtocol : RpgElementProtocol<String> {
 
     private fun decodeToRpgElement(json: JsonObject): RpgElement {
         val id = (json[ID] as? JsonPrimitive)?.content?.toLong()!!
-        val builderId = (json[CONSTRUCTOR] as? JsonPrimitive)?.content?.toLong()!!
+        val constructor = (json[CONSTRUCTOR] as? JsonPrimitive)?.content!!
+        val constructorId = constructor.toLongOrNull() ?: RpgObjectConstructor.getId(constructor)
         val param = (json[DATA] as? JsonObject)
-        return JsonRpgElement(id, builderId, param)
+        return JsonRpgElement(id, constructorId, param)
     }
 
 }
