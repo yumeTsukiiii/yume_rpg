@@ -47,7 +47,7 @@ class CommonRangePropertyAbility<PropertyType: Comparable<PropertyType>>(
 
 }
 
-typealias IntRangePropertyAbility = CommonRangePropertyAbility<Int>
+typealias LongRangePropertyAbility = CommonRangePropertyAbility<Long>
 
 typealias DoubleRangePropertyAbility = CommonRangePropertyAbility<Double>
 

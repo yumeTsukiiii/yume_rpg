@@ -113,7 +113,7 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String> {
         val data = (json[DATA] as? JsonObject)
         return rpgObjSerializeContext.getRpgElement(elementId).run {
             createRpgObject(
-                JsonRpgElementContext(rpgObjSerializeContext, this, data)
+                JsonRpgElementContext(rpgObjSerializeContext, this, JsonRpgDataHolder(data))
             )
         }
     }
@@ -133,21 +133,12 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String> {
 
 }
 
-class JsonRpgElement(
-    override val id: Long,
-    override val constructorId: Long,
-    private val data: JsonObject?
-) : RpgElement {
+class JsonRpgDataHolder(
+    private val data: JsonObject? = null
+) : RpgDataHolder {
 
-    override fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject {
-        return rpgElementContext.getConstructor(constructorId).construct(
-            // 延迟创建 RpgObject 时，需要确保 rpgElementCenter 中已经有系统所需的所有 RpgElement
-            JsonRpgObjConstructContext(rpgElementContext)
-        )
-    }
-
-    override fun getIntOrNull(key: String): Int? {
-        return (data?.get(key) as? JsonPrimitive)?.intOrNull
+    override fun getLongOrNull(key: String): Long? {
+        return (data?.get(key) as? JsonPrimitive)?.longOrNull
     }
 
     override fun getStringOrNull(key: String): String? {
@@ -167,12 +158,73 @@ class JsonRpgElement(
         return (data?.get(key) as? JsonPrimitive)?.booleanOrNull
     }
 
+    override fun getSubDataOrNull(key: String): RpgDataHolder? {
+        return (data?.get(key) as? JsonObject)?.let {
+            JsonRpgDataHolder(it)
+        }
+    }
+
+    override fun getSubArrayOrNull(key: String): RpgArrayDataHolder? {
+        return (data?.get(key) as? JsonArray)?.let {
+            JsonRpgArrayDataHolder(it)
+        }
+    }
+}
+
+class JsonRpgArrayDataHolder(
+    private val data: JsonArray? = null
+) : RpgArrayDataHolder {
+
+    override fun getLongOrNull(index: Int): Long? {
+        return (data?.get(index) as? JsonPrimitive)?.longOrNull
+    }
+
+    override fun getStringOrNull(index: Int): String? {
+        return (data?.get(index) as? JsonPrimitive)?.contentOrNull
+    }
+
+    override fun getDoubleOrNull(index: Int): Double? {
+        return (data?.get(index) as? JsonPrimitive)?.doubleOrNull
+    }
+
+    override fun getBooleanOrNull(index: Int): Boolean? {
+        return (data?.get(index) as? JsonPrimitive)?.booleanOrNull
+    }
+
+    override fun getSubDataOrNull(index: Int): RpgDataHolder? {
+        return (data?.get(index) as? JsonObject)?.let {
+            JsonRpgDataHolder(it)
+        }
+    }
+
+    override fun getSubArrayOrNull(index: Int): RpgArrayDataHolder? {
+        return (data?.get(index) as? JsonArray)?.let {
+            JsonRpgArrayDataHolder(it)
+        }
+    }
+
+    override fun iterator(): Iterator<Any> = data?.iterator() ?: emptyList<Any>().iterator()
+}
+
+class JsonRpgElement(
+    override val id: Long,
+    override val constructorId: Long,
+    data: JsonObject?
+) : RpgElement, RpgDataHolder by JsonRpgDataHolder(data) {
+
+    override fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject {
+        return rpgElementContext.getConstructor(constructorId).construct(
+            // 延迟创建 RpgObject 时，需要确保 rpgElementCenter 中已经有系统所需的所有 RpgElement
+            JsonRpgObjConstructContext(rpgElementContext)
+        )
+    }
+
 }
 
 class JsonRpgElementContext(
     private val rpgObjSerializeContext: RpgObjSerializeContext,
     override val current: RpgElement,
-    private val data: JsonObject?
+    private val rpgDataHolder: RpgDataHolder?
 ) : RpgElementContext {
 
     override fun getRpgElementOrNull(id: Long): RpgElement?
@@ -181,42 +233,71 @@ class JsonRpgElementContext(
     override fun getRpgObjectConstructorOrNull(id: Long): RpgObjectConstructor?
             = rpgObjSerializeContext.getRpgObjConstructorOrNull(id)
 
-    override fun getIntOrNull(key: String): Int? {
-        return (data?.get(key) as? JsonPrimitive)?.intOrNull ?: current.getIntOrNull(key)
+    override fun getLongOrNull(key: String): Long? {
+        return rpgDataHolder?.getLongOrNull(key) ?: current.getLongOrNull(key)
     }
 
     override fun getStringOrNull(key: String): String? {
-        return (data?.get(key) as? JsonPrimitive)?.contentOrNull ?: current.getStringOrNull(key)
+        return rpgDataHolder?.getStringOrNull(key) ?: current.getStringOrNull(key)
     }
 
     override fun getDoubleOrNull(key: String): Double? {
-        return (data?.get(key) as? JsonPrimitive)?.doubleOrNull ?: current.getDoubleOrNull(key)
+        return rpgDataHolder?.getDoubleOrNull(key) ?: current.getDoubleOrNull(key)
     }
 
     override fun getBooleanOrNull(key: String): Boolean? {
-        return (data?.get(key) as? JsonPrimitive)?.booleanOrNull ?: current.getBooleanOrNull(key)
+        return rpgDataHolder?.getBooleanOrNull(key) ?: current.getBooleanOrNull(key)
     }
 
     override fun getRpgObjectOrNull(key: String): RpgObject? {
-        return getRpgObjectOrNull(key, data) ?: current.getRpgObjectOrNull(key)
+        return getRpgObjectOrNull(key, rpgDataHolder) ?: getRpgObjectOrNull(key, current)
     }
 
-    private fun getRpgObjectOrNull(key: String, param: JsonObject?): RpgObject? {
-        return param?.get(key)?.let {
-            return when (it) {
-                is JsonArray -> RpgObjectArray(
-                    it.mapNotNull { item ->
-                        when (item) {
-                            is JsonObject -> decodeToRpgObject(item)
-                            is JsonPrimitive -> decodeToRpgObject(item)
-                            else -> null
-                        }
-                    }
-                )
+    override fun getSubDataOrNull(key: String): RpgDataHolder? {
+        return rpgDataHolder?.getSubDataOrNull(key) ?: current.getSubDataOrNull(key)
+    }
 
-                is JsonObject -> decodeToRpgObject(it)
-                is JsonPrimitive -> decodeToRpgObject(it)
+    private fun getRpgObjectOrNull(key: String, rpgDataHolder: RpgDataHolder?): RpgObject? {
+        return rpgDataHolder?.getLongOrNull(key)?.let {
+            // 1. 从 elementId 中生成
+            decodeToRpgObject(it)
+        } ?: rpgDataHolder?.getStringOrNull(key)?.let {
+            // 2. 从 elementName 中生成
+            decodeToRpgObject(RpgElement.getId(it))
+        } ?: rpgDataHolder?.getSubDataOrNull(key)?.let {
+            // 3. 从 { element: Long|String, data: JsonObject? } 中生成
+            val elementId = it.getLongOrNull(JsonRpgObjectProtocol.ELEMENT)
+            val data = it.getSubDataOrNull(JsonRpgObjectProtocol.DATA)
+            if (elementId != null) {
+                getRpgElementOrNull(elementId)?.run {
+                    createRpgObject(
+                        JsonRpgElementContext(
+                            rpgObjSerializeContext, this, data
+                        )
+                    )
+                }
+            } else {
+                null
             }
+        } ?: rpgDataHolder?.getSubArrayOrNull(key)?.let {
+            // 4. 从 JsonArray 中生成
+            RpgObjectArray(
+                it.mapNotNull { item ->
+                    when (item) {
+                        // 4.1 从 [JsonObject, JsonObject] 中生成
+                        is JsonObject -> decodeToRpgObject(item)
+                        // 4.2 从 [elementId|elementName, elementId|elementName] 中生成
+                        is JsonPrimitive -> decodeToRpgObject(item)
+                        // 4.3 从 [elementId, elementId] 中生成
+                        is Int -> decodeToRpgObject(item.toLong())
+                        // 4.3 从 [elementId, elementId] 中生成
+                        is Long -> decodeToRpgObject(item)
+                        // 4.4 从 [elementName, elementName] 中生成
+                        is String -> decodeToRpgObject(RpgElement.getId(item))
+                        else -> null
+                    }
+                }
+            )
         }
     }
 
@@ -224,14 +305,14 @@ class JsonRpgElementContext(
         return getRpgElementOrNull(elementId)?.run {
             createRpgObject(
                 JsonRpgElementContext(
-                    rpgObjSerializeContext, this, data
+                    rpgObjSerializeContext, this, JsonRpgDataHolder(data)
                 )
             )
         }
     }
 
     private fun decodeToRpgObject(json: JsonPrimitive): RpgObject? {
-        return json.longOrNull?.let(this::decodeToRpgObject)
+        return json.longOrNull?.let(this::decodeToRpgObject) ?: json.contentOrNull?.let { decodeToRpgObject(RpgElement.getId(it)) }
     }
 
     private fun decodeToRpgObject(json: JsonObject): RpgObject? {

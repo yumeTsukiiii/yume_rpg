@@ -16,7 +16,7 @@ class PropertyAbilityConstructor : RpgObjectConstructor {
         val name = context.getString(NAME)
         val alias = context.getStringOrNull(ALIAS)
         return when(type) {
-            "int" -> NumberPropertyAbility(context.getIntOrNull(VALUE) ?: 0, name, alias, context.elementId)
+            "int" -> NumberPropertyAbility(context.getLongOrNull(VALUE) ?: 0, name, alias, context.elementId)
             "double" -> NumberPropertyAbility(context.getDoubleOrNull(VALUE) ?: 0, name, alias, context.elementId)
             "string" -> StringPropertyAbility(context.getStringOrNull(VALUE) ?: "", name, alias, context.elementId)
             "boolean" -> BooleanPropertyAbility(context.getBooleanOrNull(VALUE) ?: false, name, alias, context.elementId)
@@ -54,11 +54,11 @@ class RangePropertyAbilityConstructor : RpgObjectConstructor {
         val name = context.getString(NAME)
         val alias = context.getStringOrNull(ALIAS)
         return when(type) {
-            "int" -> {
-                val maxValue = context.getInt(MAX_VALUE)
-                val minValue = context.getInt(MIN_VALUE)
-                val value = context.getIntOrNull(VALUE) ?: maxValue
-                IntRangePropertyAbility(
+            "long" -> {
+                val maxValue = context.getLong(MAX_VALUE)
+                val minValue = context.getLong(MIN_VALUE)
+                val value = context.getLongOrNull(VALUE) ?: maxValue
+                LongRangePropertyAbility(
                     RangeProperty(value, maxValue, minValue),
                     name, alias, context.elementId
                 )
