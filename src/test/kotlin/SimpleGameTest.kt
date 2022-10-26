@@ -1,7 +1,7 @@
-import fan.yumetsuki.yumerpg.RpgGameEngine
+import fan.yumetsuki.yumerpg.SingleRpgGame
 import fan.yumetsuki.yumerpg.builtin.RpgModel
 import fan.yumetsuki.yumerpg.builtin.game.join
-import fan.yumetsuki.yumerpg.builtin.game.startGame
+import fan.yumetsuki.yumerpg.builtin.game.start
 import fan.yumetsuki.yumerpg.serialization.RpgObjectArray
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -31,7 +31,7 @@ class SimpleGameTest {
                     writeText(dataContent)
                 }
             }
-            val game = RpgGameEngine.startGame {
+            val game = SingleRpgGame.start {
                 rpgElementFiles = listOf(rpgElementFile)
                 this.defaultDataFile = defaultDataFile
                 registerRpgObjectConstructor(

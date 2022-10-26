@@ -12,6 +12,8 @@ interface RpgGame {
 
     suspend fun players(): List<RpgPlayer>
 
+    suspend fun restart() = Unit
+
 }
 
 suspend fun RpgGame.getPlayer(account: RpgAccount): RpgPlayer = getPlayerOrNull(account)!!

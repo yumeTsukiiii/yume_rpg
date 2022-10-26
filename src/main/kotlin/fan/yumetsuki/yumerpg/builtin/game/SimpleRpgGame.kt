@@ -1,6 +1,6 @@
 package fan.yumetsuki.yumerpg.builtin.game
 
-import fan.yumetsuki.yumerpg.RpgGameEngine
+import fan.yumetsuki.yumerpg.SingleRpgGame
 import fan.yumetsuki.yumerpg.builtin.constructor.PropertyAbilityConstructor
 import fan.yumetsuki.yumerpg.builtin.constructor.PropertyChangeAbilityConstructor
 import fan.yumetsuki.yumerpg.builtin.constructor.RangePropertyAbilityConstructor
@@ -240,12 +240,13 @@ class SimpleRpgGame(
 
 }
 
-suspend fun RpgGameEngine.startGame(initializer: SimpleGameStarterConfig.Builder.() -> Unit) : RpgGame {
-    return startGame(
+suspend fun SingleRpgGame.start(initializer: SimpleGameStarterConfig.Builder.() -> Unit) : RpgGame {
+    start(
         SimpleGameStarter(
             SimpleGameStarterConfig.Builder().apply(initializer).build()
         )
     )
+    return this
 }
 
 suspend fun RpgGame.join(id: Long) : RpgPlayer {
