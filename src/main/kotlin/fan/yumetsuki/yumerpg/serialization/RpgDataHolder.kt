@@ -19,6 +19,8 @@ interface RpgDataHolder {
     fun getSubDataOrNull(key: String): RpgDataHolder? = null
 
     fun getSubArrayOrNull(key: String): RpgArrayDataHolder? = null
+
+    fun forEach(func: (Pair<String, Any>) -> Unit) = Unit
 }
 
 interface RpgArrayDataHolder : Iterable<Any> {

@@ -1,7 +1,6 @@
 package fan.yumetsuki.yumerpg.builtin.constructor
 
-import fan.yumetsuki.yumerpg.builtin.PropertyAbility
-import fan.yumetsuki.yumerpg.builtin.RangePropertyAbility
+import fan.yumetsuki.yumerpg.builtin.*
 import fan.yumetsuki.yumerpg.builtin.rpgobject.*
 import fan.yumetsuki.yumerpg.serialization.*
 
@@ -141,5 +140,48 @@ class PropertyChangeAbilityConstructor : RpgObjectConstructor {
         const val EXPR = "expr"
     }
 
+
+}
+
+class CommonRpgModelConstructor : RpgObjectConstructor {
+
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
+        return CommonRpgModel(
+            elementId = context.elementId,
+            meta = mapRpgData().apply {
+                context.getSubDataOrNull(META)?.forEach {
+                    if (it.isPrimitive()) {
+                        set(it.first, it.second)
+                    }
+                }
+            },
+            abilities = context.getRpgObjectOrNull(ABILITIES)?.let {
+                when(it) {
+                    is RpgObjectArray -> it.filterIsInstance<RpgAbility<*, *, *, *>>()
+                    is RpgAbility<*, *, *, *> -> listOf(it)
+                    else -> emptyList()
+                }
+            } ?: emptyList()
+        )
+    }
+
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
+        val model = context.rpgObject<CommonRpgModel>()
+        context.deconstruct {
+            put(META, model.meta().all())
+            put(ABILITIES, model.abilities())
+        }
+    }
+
+    private fun Any.isPrimitive(): Boolean {
+        return this is Int || this is Long || this is Double || this is Boolean || this is Float || this is String
+    }
+
+    companion object {
+
+        const val META = "meta"
+        const val ABILITIES = "abilities"
+
+    }
 
 }

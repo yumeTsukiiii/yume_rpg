@@ -90,25 +90,32 @@ interface RpgObjectDeconstructContext : RpgObjectContext {
  */
 interface RpgObjectDataBuilder {
 
-    fun put(key: String, value: Int)
+    fun put(key: String, value: Number)
 
     fun put(key: String, value: String)
 
     fun put(key: String, value: Boolean)
 
-    fun put(key: String, value: Double)
-
     fun put(key: String, value: RpgObject)
+
+    fun put(key: String, value: Map<String, Any>)
+
+    fun put(key: String, value: List<Any>)
+
+    fun put(key: String, value: RpgDataHolder)
+
+    fun put(key: String, value: RpgArrayDataHolder)
 
 }
 
 fun RpgObjectDataBuilder.put(key: String, value: Any) {
     when(value) {
-        is Int -> put(key, value)
-        is Double -> put(key, value)
+        is Number -> put(key, value)
         is String -> put(key, value)
         is Boolean -> put(key, value)
         is RpgObject -> put(key, value)
+        is RpgDataHolder -> put(key, value)
+        is RpgArrayDataHolder -> put(key, value)
     }
 }
 

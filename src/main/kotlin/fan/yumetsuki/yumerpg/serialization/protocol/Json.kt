@@ -169,6 +169,20 @@ class JsonRpgDataHolder(
             JsonRpgArrayDataHolder(it)
         }
     }
+
+    override fun forEach(func: (Pair<String, Any>) -> Unit) {
+        data?.forEach { k, v ->
+            func(k to v.run {
+                when(this) {
+                    is JsonPrimitive -> {
+                        this.doubleOrNull ?: this.longOrNull ?: this.booleanOrNull ?: this.content
+                    }
+                    is JsonObject -> JsonRpgDataHolder(this)
+                    is JsonArray -> JsonRpgArrayDataHolder(this)
+                }
+            })
+        }
+    }
 }
 
 class JsonRpgArrayDataHolder(
@@ -254,7 +268,25 @@ class JsonRpgElementContext(
     }
 
     override fun getSubDataOrNull(key: String): RpgDataHolder? {
-        return rpgDataHolder?.getSubDataOrNull(key) ?: current.getSubDataOrNull(key)
+        return rpgDataHolder?.getSubDataOrNull(key)?.let {
+            JsonRpgElementContext(rpgObjSerializeContext, current, it)
+        } ?: current.getSubDataOrNull(key)?.let {
+            JsonRpgElementContext(rpgObjSerializeContext, current, it)
+        }
+    }
+
+    override fun forEach(func: (Pair<String, Any>) -> Unit) {
+        val keys = hashSetOf<String>()
+        rpgDataHolder?.forEach {
+            keys.add(it.first)
+            func(it)
+        }
+        // RpgObject 数据中已有的，覆盖 element 中的数据，不再遍历
+        current.forEach {
+            if (it.first !in keys) {
+                func(it)
+            }
+        }
     }
 
     private fun getRpgObjectOrNull(key: String, rpgDataHolder: RpgDataHolder?): RpgObject? {
@@ -347,7 +379,7 @@ class JsonRpgObjectDataBuilder(
     private val jsonBuilder: JsonObjectBuilder,
     private val rpgObjSerializeContext: RpgObjSerializeContext,
 ): RpgObjectDataBuilder {
-    override fun put(key: String, value: Int) {
+    override fun put(key: String, value: Number) {
         jsonBuilder.put(key, value)
     }
 
@@ -356,10 +388,6 @@ class JsonRpgObjectDataBuilder(
     }
 
     override fun put(key: String, value: Boolean) {
-        jsonBuilder.put(key, value)
-    }
-
-    override fun put(key: String, value: Double) {
         jsonBuilder.put(key, value)
     }
 
@@ -377,6 +405,66 @@ class JsonRpgObjectDataBuilder(
             }
         }
 
+    }
+
+    override fun put(key: String, value: Map<String, Any>) {
+        jsonBuilder.put(key, buildJsonObject(value))
+    }
+
+    override fun put(key: String, value: List<Any>) {
+        jsonBuilder.put(key, buildJsonArray(value))
+    }
+
+    override fun put(key: String, value: RpgDataHolder) {
+        jsonBuilder.put(key, buildJsonObject(value))
+    }
+
+    override fun put(key: String, value: RpgArrayDataHolder) {
+        jsonBuilder.put(key, buildJsonArray(value))
+    }
+
+    private fun buildJsonObject(value: RpgDataHolder): JsonObject {
+        return buildJsonObject {
+            value.forEach { (k, v) ->
+                when(v) {
+                    is Number -> put(k, v)
+                    is Boolean -> put(k, v)
+                    is String -> put(k, v)
+                    is RpgDataHolder -> put(k, buildJsonObject(v))
+                    is RpgArrayDataHolder -> put(k, buildJsonArray(v))
+                }
+            }
+        }
+    }
+
+    private fun buildJsonObject(value: Map<String, Any>): JsonObject {
+        return buildJsonObject {
+            value.forEach { (k, v) ->
+                when(v) {
+                    is Number -> put(k, v)
+                    is Boolean -> put(k, v)
+                    is String -> put(k, v)
+                    is RpgObject -> put(k, buildRpgObjectJson(v))
+                    is RpgDataHolder -> put(k, buildJsonObject(v))
+                    is RpgArrayDataHolder -> put(k, buildJsonArray(v))
+                }
+            }
+        }
+    }
+
+    private fun buildJsonArray(value: Iterable<Any>): JsonArray {
+        return buildJsonArray {
+            value.forEach {
+                when(it) {
+                    is Number -> add(it)
+                    is Boolean -> add(it)
+                    is String -> add(it)
+                    is RpgObject -> add(buildRpgObjectJson(it))
+                    is RpgDataHolder -> add(buildJsonObject(it))
+                    is RpgArrayDataHolder -> add(buildJsonArray(it))
+                }
+            }
+        }
     }
 
     private fun buildRpgObjectJson(value: RpgObject): JsonObject {
