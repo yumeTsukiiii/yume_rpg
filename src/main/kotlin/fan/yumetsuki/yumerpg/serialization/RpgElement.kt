@@ -35,6 +35,10 @@ interface RpgElement : RpgDataHolder {
 
     fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject
 
+    companion object {
+        fun getId(name: String) : Long = name.longHashCode()
+    }
+
 }
 
 interface RpgElementContext: RpgDataHolder {

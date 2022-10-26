@@ -25,8 +25,9 @@ object JsonByteObjectProtocol : RpgObjectProtocol<ByteArray> {
 /**
  * RpgElement 反序列化协议的 JSON 实现
  * {
- *  "id": Long, // RpgElement id，必填
- *  "constructor": Long|String, // 构建对应的 RpgObject 的 Constructor Id or Constructor Name，必填
+ *  "id": Long?, // RpgElement id，可选，当 id 为 null 时，使用 name 生成 id
+ *  "name": String? // 可选，当 id 为 null 时，使用 name 生成 id
+ *  "constructor": Long|String, // 构建对应的 RpgObject 的 Constructor id or Constructor Name，必填
  *  "data": JsonObject? // 参数，由 builder 生成 RpgObject 时动态读取解析
  * }
  * @author yumetsuki
@@ -35,6 +36,8 @@ object JsonByteObjectProtocol : RpgObjectProtocol<ByteArray> {
 object JsonRpgElementProtocol : RpgElementProtocol<String> {
 
     const val ID = "id"
+
+    const val NAME = "name"
 
     const val CONSTRUCTOR = "constructor"
 
@@ -49,7 +52,9 @@ object JsonRpgElementProtocol : RpgElementProtocol<String> {
     }
 
     private fun decodeToRpgElement(json: JsonObject): RpgElement {
-        val id = (json[ID] as? JsonPrimitive)?.content?.toLong()!!
+        val id = (json[ID] as? JsonPrimitive)?.content?.toLongOrNull() ?: (json[NAME] as? JsonPrimitive)?.content?.let {
+            RpgElement.getId(it)
+        }!!
         val constructor = (json[CONSTRUCTOR] as? JsonPrimitive)?.content!!
         val constructorId = constructor.toLongOrNull() ?: RpgObjectConstructor.getId(constructor)
         val param = (json[DATA] as? JsonObject)
@@ -61,7 +66,7 @@ object JsonRpgElementProtocol : RpgElementProtocol<String> {
 /**
  * RpgObject 序列化、反序列化协议的 JSON 实现
  * {
- *  "elementId": Long, // RpgObject 对应创建者 RpgElement id，必填
+ *  "element": Long|String, // RpgObject 对应创建者 RpgElement id 或者 name，必填
  *  "data": JsonObject? // 存储参数，由 builder 生成 RpgObject 时动态读取解析，并在[encodeToContent]时存储，当无存档生成对象时，将由[RpgElement]中的参数填充
  * }
  * [RpgObject] 会由其对应的 [RpgElement] 创建，因此该协议必须依赖构建好的 Element 列表以及注册的 [RpgObjectConstructor] 列表
@@ -69,7 +74,7 @@ object JsonRpgElementProtocol : RpgElementProtocol<String> {
  */
 object JsonRpgObjectProtocol: RpgObjectProtocol<String> {
 
-    const val ELEMENT_ID = "elementId"
+    const val ELEMENT = "element"
 
     const val DATA = "data"
 
@@ -103,7 +108,8 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String> {
     }
 
     private fun decodeFromJsonObject(rpgObjSerializeContext: RpgObjSerializeContext, json: JsonObject): RpgObject {
-        val elementId = (json[ELEMENT_ID] as? JsonPrimitive)?.content?.toLong()!!
+        val element = (json[ELEMENT] as? JsonPrimitive)?.content!!
+        val elementId = element.toLongOrNull() ?: RpgElement.getId(element)
         val data = (json[DATA] as? JsonObject)
         return rpgObjSerializeContext.getRpgElement(elementId).run {
             createRpgObject(
@@ -114,7 +120,7 @@ object JsonRpgObjectProtocol: RpgObjectProtocol<String> {
 
     private fun encodeToJsonObject(rpgObjSerializeContext: RpgObjSerializeContext, serializable: RpgObject) : JsonObject {
         return buildJsonObject {
-            put(ELEMENT_ID, serializable.elementId)
+            put(ELEMENT, serializable.elementId)
             putJsonObject(DATA) {
                 rpgObjSerializeContext.getRpgObjConstructor(
                     rpgObjSerializeContext.getRpgElement(serializable.elementId).constructorId
@@ -229,7 +235,7 @@ class JsonRpgElementContext(
     }
 
     private fun decodeToRpgObject(json: JsonObject): RpgObject? {
-        return (json[JsonRpgObjectProtocol.ELEMENT_ID] as? JsonPrimitive)?.longOrNull?.let {
+        return (json[JsonRpgObjectProtocol.ELEMENT] as? JsonPrimitive)?.longOrNull?.let {
             decodeToRpgObject(it, json[JsonRpgObjectProtocol.DATA] as? JsonObject)
         }
     }
@@ -295,7 +301,7 @@ class JsonRpgObjectDataBuilder(
     private fun buildRpgObjectJson(value: RpgObject): JsonObject {
         return buildJsonObject {
             rpgObjSerializeContext.getRpgObjConstructorOrNullByElementId(value.elementId)?.let {
-                put(JsonRpgObjectProtocol.ELEMENT_ID, value.elementId)
+                put(JsonRpgObjectProtocol.ELEMENT, value.elementId)
                 putJsonObject(JsonRpgObjectProtocol.DATA) {
                     it.deconstruct(
                         JsonRpgObjDeconstructContext(rpgObjSerializeContext, value, this)
