@@ -15,7 +15,7 @@ class PropertyAbilityConstructor : RpgObjectConstructor {
         val name = context.getString(NAME)
         val alias = context.getStringOrNull(ALIAS)
         return when(type) {
-            "int" -> NumberPropertyAbility(context.getLongOrNull(VALUE) ?: 0, name, alias, context.elementId)
+            "long" -> NumberPropertyAbility(context.getLongOrNull(VALUE) ?: 0, name, alias, context.elementId)
             "double" -> NumberPropertyAbility(context.getDoubleOrNull(VALUE) ?: 0, name, alias, context.elementId)
             "string" -> StringPropertyAbility(context.getStringOrNull(VALUE) ?: "", name, alias, context.elementId)
             "boolean" -> BooleanPropertyAbility(context.getBooleanOrNull(VALUE) ?: false, name, alias, context.elementId)
@@ -117,7 +117,7 @@ class RangePropertyAbilityConstructor : RpgObjectConstructor {
 }
 
 /**
- * 属性改变能力构造器，通常用于一些消耗品的功能，比如 hp 回复
+ * 属性改变能力构造器，通常用于一些改变固定属性的消耗品的功能，比如 level 提升
  * @author yumetsuki
  */
 class PropertyChangeAbilityConstructor : RpgObjectConstructor {
@@ -143,7 +143,34 @@ class PropertyChangeAbilityConstructor : RpgObjectConstructor {
 
 }
 
-class CommonRpgModelConstructor : RpgObjectConstructor {
+/**
+ * 范围属性改变能力构造器，通常用于一些改变拥有上下限属性的消耗品的功能，比如 hp 回复
+ * @author yumetsuki
+ */
+class RangePropertyChangeAbilityConstructor : RpgObjectConstructor {
+
+    override fun construct(context: RpgObjectConstructContext): RpgObject {
+        return PropertyChangeAbility<Comparable<*>>(
+            context.getString(PROPERTY),
+            context.getString(EXPR),
+            elementId = context.elementId
+        )
+    }
+
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
+        // do nothing
+        // 属性改变并不需要被存储，它的 property 和 expr 应当在 element 描述中配置，不应被改变
+    }
+
+    companion object {
+        const val PROPERTY = "property"
+        const val EXPR = "expr"
+    }
+
+
+}
+
+open class CommonRpgModelConstructor : RpgObjectConstructor {
 
     override fun construct(context: RpgObjectConstructContext): RpgObject {
         return CommonRpgModel(
@@ -155,13 +182,14 @@ class CommonRpgModelConstructor : RpgObjectConstructor {
                     }
                 }
             },
-            abilities = context.getRpgObjectOrNull(ABILITIES)?.let {
-                when(it) {
-                    is RpgObjectArray -> it.filterIsInstance<RpgAbility<*, *, *, *>>()
-                    is RpgAbility<*, *, *, *> -> listOf(it)
-                    else -> emptyList()
-                }
-            } ?: emptyList()
+            abilities = buildList {
+                addAll(
+                    context.getRpgObjectOrNull(FIX_ABILITIES).abilities()
+                )
+                addAll(
+                    context.getRpgObjectOrNull(ABILITIES).abilities()
+                )
+            }
         )
     }
 
@@ -177,11 +205,34 @@ class CommonRpgModelConstructor : RpgObjectConstructor {
         return this is Int || this is Long || this is Double || this is Boolean || this is Float || this is String
     }
 
+    private fun RpgObject?.abilities(): List<RpgAbility<*, *, *, *>> {
+        return this?.let {
+            when(it) {
+                is RpgObjectArray -> it.filterIsInstance<RpgAbility<*, *, *, *>>()
+                is RpgAbility<*, *, *, *> -> listOf(it)
+                else -> emptyList()
+            }
+        } ?: emptyList()
+    }
+
     companion object {
 
         const val META = "meta"
+        const val FIX_ABILITIES = "fixAbilities"
         const val ABILITIES = "abilities"
 
+    }
+
+}
+
+/**
+ * 不可存储的 RpgModel，仅能在 element 文件中定义使用
+ * @author yumetsuki
+ */
+class NotSaveRpgModelConstructor : CommonRpgModelConstructor() {
+
+    override fun deconstruct(context: RpgObjectDeconstructContext) {
+        // do nothing
     }
 
 }

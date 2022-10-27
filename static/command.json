@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Attack",
+    "constructor": "NotSaveRpgModelConstructor",
+    "data": {
+      "meta": {
+        "identify": "attack"
+      },
+      "fixAbility": [
+        {
+          "element": ""
+        }
+      ]
+    }
+  }
+]

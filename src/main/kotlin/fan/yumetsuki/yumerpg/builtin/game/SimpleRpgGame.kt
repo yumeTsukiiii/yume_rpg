@@ -55,9 +55,9 @@ class SimpleGameStarterConfig(
 
     class Builder {
 
-        var rpgElementFiles: List<File> = listOf(File("system/rpg_element.yumerpg"))
+        var rpgElementFiles: List<File> = listOf(File(DEFAULT_ELEMENT_FILE))
 
-        var defaultDataFile: File = File("system/default-save.yumerpg")
+        var defaultDataFile: File = File(DEFAULT_DATA_FILE)
 
         var rpgElementProtocol: RpgElementProtocol<ByteArray> = JsonByteElementProtocol
 
@@ -94,6 +94,11 @@ class SimpleGameStarterConfig(
 
     }
 
+    companion object {
+        const val DEFAULT_ELEMENT_FILE = "system/element/rpg_element.rpg"
+        const val DEFAULT_DATA_FILE = "system/default_save.yumerpg"
+    }
+
 }
 
 /**
@@ -109,6 +114,11 @@ class SimpleGameStarter(
             CommonRpgElementCenter().apply {
                 withContext(Dispatchers.IO) {
                     rpgElementFiles.map {
+                        it.parentFile?.also { parentDir ->
+                            if (!parentDir.exists()) {
+                                parentDir.mkdirs()
+                            }
+                        }
                         rpgElementProtocol.decodeFromContent(it.readBytes())
                     }
                 }.forEach(this::registerElement)
@@ -227,10 +237,10 @@ class SimpleRpgGame(
 
     private suspend fun RpgAccount.getSaveFile() : File = coroutineScope {
         withContext(Dispatchers.IO) {
-            File("save/save-${id}.yumerpg").apply {
+            File("system/save/save-${id}.yumerpg").apply {
                 if (!exists()) {
                     if (!parentFile.exists()) {
-                        parentFile.mkdir()
+                        parentFile.mkdirs()
                     }
                     createNewFile()
                 }

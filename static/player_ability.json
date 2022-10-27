@@ -1,0 +1,69 @@
+[
+  {
+    "name": "NickAbility",
+    "constructor": "PropertyAbilityConstructor",
+    "data": {
+      "type": "string",
+      "name": "nickName",
+      "alias": "昵称",
+      "value": ""
+    }
+  },
+  {
+    "name": "AvatarAbility",
+    "constructor": "PropertyAbilityConstructor",
+    "data": {
+      "type": "string",
+      "name": "avatar",
+      "alias": "头像",
+      "value": ""
+    }
+  },
+  {
+    "name": "HpAbility",
+    "constructor": "RangePropertyAbilityConstructor",
+    "data": {
+      "type": "long",
+      "name": "hp",
+      "alias": "生命值",
+      "maxValue": 300,
+      "minValue": 0
+    }
+  },
+  {
+    "name": "MpAbility",
+    "constructor": "RangePropertyAbilityConstructor",
+    "data": {
+      "type": "long",
+      "name": "mp",
+      "alias": "法力值",
+      "maxValue": 200,
+      "minValue": 0
+    }
+  },
+  {
+    "name": "LevelAbility",
+    "constructor": "RangePropertyAbilityConstructor",
+    "data": {
+      "type": "long",
+      "name": "level",
+      "alias": "等级",
+      "maxValue": 99,
+      "minValue": 1
+    }
+  },
+  {
+    "name": "SignCountAbility",
+    "constructor": "PropertyAbilityConstructor",
+    "data": {
+      "type": "long",
+      "name": "signCount",
+      "alias": "签到次数",
+      "value": 0
+    }
+  },
+  {
+    "name": "FixAttack",
+    "constructor": "Proper"
+  }
+]

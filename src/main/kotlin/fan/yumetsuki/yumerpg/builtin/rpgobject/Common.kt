@@ -194,7 +194,7 @@ class RangePropertyChangeAbility<PropertyType: Comparable<PropertyType>>(
 
 }
 
-typealias IntRangePropertyChangeAbility = RangePropertyChangeAbility<Int>
+typealias LongRangePropertyChangeAbility = RangePropertyChangeAbility<Long>
 
 typealias DoubleRangePropertyChangeAbility = RangePropertyChangeAbility<Double>
 
