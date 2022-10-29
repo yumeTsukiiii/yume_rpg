@@ -1,0 +1,6 @@
+[
+  {
+    "name": "PropertyChange",
+    "constructor": "PropertyChangeSystem"
+  }
+]

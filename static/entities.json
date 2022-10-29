@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Character",
+    "constructor": "RpgEntity",
+    "data": {
+      "components": [
+        "Hp",
+        "Mp",
+        "Level"
+      ]
+    }
+  }
+]

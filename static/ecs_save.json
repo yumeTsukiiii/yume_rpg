@@ -1,0 +1,18 @@
+[
+  {
+    "element": "Character",
+    "data": {
+      "components": [
+        {
+          "element": "Hp",
+          "data": {
+            "maxValue": 300,
+            "i": {
+              "a": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+]

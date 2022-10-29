@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Hp",
+    "constructor": "RangePropertyConstructor",
+    "data": {
+      "type": "long"
+    }
+  },
+  {
+    "name": "Mp",
+    "constructor": "RangePropertyConstructor",
+    "data": {
+      "type": "long"
+    }
+  },
+  {
+    "name": "Level",
+    "constructor": "RangePropertyConstructor",
+    "data": {
+      "type": "long"
+    }
+  }
+]
