@@ -1,5 +1,5 @@
 import fan.yumetsuki.yumerpg.SingleRpgGame
-import fan.yumetsuki.yumerpg.builtin.RpgModel
+import fan.yumetsuki.yumerpg.builtin.RpgEntity
 import fan.yumetsuki.yumerpg.builtin.game.join
 import fan.yumetsuki.yumerpg.builtin.game.start
 import fan.yumetsuki.yumerpg.serialization.RpgObjectArray
@@ -15,7 +15,7 @@ class SimpleGameTest {
     @Test
     fun testSimpleGame() {
         runBlocking {
-            val saveFile = File("save/save-1.yumerpg")
+            val saveFile = File("system/save/save-1.yumerpg")
             if (saveFile.exists()) {
                 saveFile.delete()
             }
@@ -35,14 +35,14 @@ class SimpleGameTest {
                 rpgElementFiles = listOf(rpgElementFile)
                 this.defaultDataFile = defaultDataFile
                 registerRpgObjectConstructor(
-                    TestAbilityConstructor(),
-                    TestRpgModelConstructor()
+                    TestComponentConstructor(),
+                    TestRpgEntityConstructor()
                 )
                 onInitRpgObject {
                     assertTrue(this is RpgObjectArray)
                     val rpgModel = this[0]
-                    assertTrue(rpgModel is RpgModel)
-                    rpgModel.abilities().filterIsInstance<TestAbility>().forEach {
+                    assertTrue(rpgModel is RpgEntity)
+                    rpgModel.components().filterIsInstance<TestComponent>().forEach {
                         it.value = 123456
                     }
                 }
@@ -51,12 +51,12 @@ class SimpleGameTest {
             val player = game.join(1L)
             assertEquals(123456, Json.parseToJsonElement(
                 saveFile.readBytes().decodeToString()
-            ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("abilities")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
+            ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("components")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
             assertEquals(player, game.getPlayerOrNull(player.account))
 
-            val model = (player.data() as RpgObjectArray)[0] as RpgModel
-            assertEquals("TestRpgModel", model.meta().get<String>("name"))
-            model.abilities().filterIsInstance<TestAbility>().forEach {
+            val model = (player.data() as RpgObjectArray)[0] as RpgEntity
+            assertEquals("TestRpgEntity", model.name)
+            model.components().filterIsInstance<TestComponent>().forEach {
                 it.value = 114514
             }
 
@@ -65,8 +65,8 @@ class SimpleGameTest {
             assertEquals(null, game.getPlayerOrNull(player.account))
             assertEquals(114514, Json.parseToJsonElement(
                 saveFile.readBytes().decodeToString()
-            ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("abilities")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
-            saveFile.parentFile.deleteRecursively()
+            ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("components")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
+            saveFile.parentFile.parentFile.deleteRecursively()
             rpgElementFile.delete()
             defaultDataFile.delete()
         }

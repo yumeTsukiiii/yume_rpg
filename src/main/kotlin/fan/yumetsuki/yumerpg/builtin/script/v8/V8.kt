@@ -4,10 +4,10 @@ import com.eclipsesource.v8.V8
 import com.eclipsesource.v8.V8Array
 import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.V8Value
-import fan.yumetsuki.yumerpg.builtin.PropertyAbility
-import fan.yumetsuki.yumerpg.builtin.RpgModel
+import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyComponent
 import fan.yumetsuki.yumerpg.builtin.script.ScriptEngine
 import fan.yumetsuki.yumerpg.builtin.script.ScriptRuntimeContext
+import fan.yumetsuki.yumerpg.ecs.ECSEntity
 import kotlinx.serialization.json.*
 
 /**
@@ -126,10 +126,10 @@ class V8ScriptRuntimeContext(
     }
 }
 
-fun ScriptRuntimeContext.registerRpgModel(name: String, value: RpgModel) {
+suspend fun ScriptRuntimeContext.registerECSEntity(name: String, value: ECSEntity) {
 
     registerVariable(name, buildJsonObject {
-        value.abilities().filterIsInstance<PropertyAbility<*, RpgModel>>().forEach {
+        value.components().filterIsInstance<PropertyComponent<*>>().forEach {
             put(it.name, it.value)
         }
     })

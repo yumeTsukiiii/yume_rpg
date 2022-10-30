@@ -11,6 +11,9 @@ interface RpgObject {
      */
     val elementId: Long
 
+    val isSerializable: Boolean
+        get() = true
+
     companion object Empty: RpgObject {
         override val elementId: Long
             get() = UNKNOWN_ELEMENT_ID

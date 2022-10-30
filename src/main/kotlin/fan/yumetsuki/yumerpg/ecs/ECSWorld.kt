@@ -1,12 +1,12 @@
 package fan.yumetsuki.yumerpg.ecs
 
-interface RpgWorld {
+interface ECSWorld {
 
     suspend fun onTick()
 
 }
 
-class CommonRpgWorld : RpgWorld {
+class CommonRpgWorld : ECSWorld {
 
     override suspend fun onTick() {
         TODO("Not yet implemented")

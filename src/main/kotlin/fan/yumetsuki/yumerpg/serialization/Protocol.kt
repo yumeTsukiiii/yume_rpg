@@ -15,9 +15,9 @@ interface RpgElementProtocol<Content> {
  */
 interface RpgObjectProtocol<Content> {
 
-    fun encodeToContent(rpgObjSerializeContext: RpgObjSerializeContext, serializable: RpgObject): Content
+    suspend fun encodeToContent(rpgObjSerializeContext: RpgObjSerializeContext, serializable: RpgObject): Content
 
-    fun decodeFromContent(rpgObjSerializeContext: RpgObjSerializeContext, content: Content): RpgObject
+    suspend fun decodeFromContent(rpgObjSerializeContext: RpgObjSerializeContext, content: Content): RpgObject
 
 }
 

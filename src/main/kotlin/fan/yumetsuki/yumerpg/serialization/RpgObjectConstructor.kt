@@ -48,12 +48,12 @@ interface RpgObjectConstructor {
      * 构建一个 [RpgObject] 对象
      * @return [RpgObject] 可能是游戏中的任何对象
      */
-    fun construct(context: RpgObjectConstructContext): RpgObject
+    suspend fun construct(context: RpgObjectConstructContext): RpgObject
 
     /**
      * 解构一个 [RpgObject] 对象，[RpgObjectDeconstructContext.deconstruct] 会将其中 RpgObject 解构为协议存储的对象
      */
-    fun deconstruct(context: RpgObjectDeconstructContext)
+    suspend fun deconstruct(context: RpgObjectDeconstructContext) = Unit
 
     companion object {
         fun getId(name: String) : Long = name.longHashCode()
@@ -79,7 +79,7 @@ interface RpgObjectDeconstructContext : RpgObjectContext {
 
     val rpgObject: RpgObject
 
-    fun deconstruct(deconstruction: RpgObjectDataBuilder.() -> Unit)
+    suspend fun deconstruct(deconstruction: suspend RpgObjectDataBuilder.() -> Unit)
 
 }
 
@@ -90,25 +90,25 @@ interface RpgObjectDeconstructContext : RpgObjectContext {
  */
 interface RpgObjectDataBuilder {
 
-    fun put(key: String, value: Number)
+    suspend fun put(key: String, value: Number)
 
-    fun put(key: String, value: String)
+    suspend fun put(key: String, value: String)
 
-    fun put(key: String, value: Boolean)
+    suspend fun put(key: String, value: Boolean)
 
-    fun put(key: String, value: RpgObject)
+    suspend fun put(key: String, value: RpgObject)
 
-    fun put(key: String, value: Map<String, Any>)
+    suspend fun put(key: String, value: Map<String, Any>)
 
-    fun put(key: String, value: List<Any>)
+    suspend fun put(key: String, value: List<Any>)
 
-    fun put(key: String, value: RpgDataHolder)
+    suspend fun put(key: String, value: RpgDataHolder)
 
-    fun put(key: String, value: RpgArrayDataHolder)
+    suspend fun put(key: String, value: RpgArrayDataHolder)
 
 }
 
-fun RpgObjectDataBuilder.put(key: String, value: Any) {
+suspend fun RpgObjectDataBuilder.put(key: String, value: Any) {
     when(value) {
         is Number -> put(key, value)
         is String -> put(key, value)

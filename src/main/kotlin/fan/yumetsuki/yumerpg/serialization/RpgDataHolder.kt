@@ -6,21 +6,21 @@ package fan.yumetsuki.yumerpg.serialization
  */
 interface RpgDataHolder {
 
-    fun getLongOrNull(key: String): Long? = null
+    suspend fun getLongOrNull(key: String): Long? = null
 
-    fun getStringOrNull(key: String): String? = null
+    suspend fun getStringOrNull(key: String): String? = null
 
-    fun getDoubleOrNull(key: String): Double? = null
+    suspend fun getDoubleOrNull(key: String): Double? = null
 
-    fun getBooleanOrNull(key: String): Boolean? = null
+    suspend fun getBooleanOrNull(key: String): Boolean? = null
 
-    fun getRpgObjectOrNull(key: String): RpgObject? = null
+    suspend fun getRpgObjectOrNull(key: String): RpgObject? = null
 
-    fun getSubDataOrNull(key: String): RpgDataHolder? = null
+    suspend fun getSubDataOrNull(key: String): RpgDataHolder? = null
 
-    fun getSubArrayOrNull(key: String): RpgArrayDataHolder? = null
+    suspend fun getSubArrayOrNull(key: String): RpgArrayDataHolder? = null
 
-    fun forEach(func: (Pair<String, Any>) -> Unit) = Unit
+    suspend fun forEach(func: suspend (Pair<String, Any>) -> Unit) = Unit
 }
 
 interface RpgArrayDataHolder : Iterable<Any> {
@@ -41,13 +41,13 @@ interface RpgArrayDataHolder : Iterable<Any> {
 
 }
 
-fun RpgDataHolder.getLong(key: String): Long = getLongOrNull(key) ?: error("int $key 不存在")
-fun RpgDataHolder.getString(key: String): String = getStringOrNull(key) ?: error("string $key 不存在")
-fun RpgDataHolder.getDouble(key: String): Double = getDoubleOrNull(key) ?: error("double $key 不存在")
-fun RpgDataHolder.getBoolean(key: String): Boolean = getBooleanOrNull(key) ?: error("boolean $key 不存在")
-fun RpgDataHolder.getRpgObject(key: String): RpgObject = getRpgObjectOrNull(key) ?: error("RpgObject $key 不存在")
+suspend fun RpgDataHolder.getLong(key: String): Long = getLongOrNull(key) ?: error("int $key 不存在")
+suspend fun RpgDataHolder.getString(key: String): String = getStringOrNull(key) ?: error("string $key 不存在")
+suspend fun RpgDataHolder.getDouble(key: String): Double = getDoubleOrNull(key) ?: error("double $key 不存在")
+suspend fun RpgDataHolder.getBoolean(key: String): Boolean = getBooleanOrNull(key) ?: error("boolean $key 不存在")
+suspend fun RpgDataHolder.getRpgObject(key: String): RpgObject = getRpgObjectOrNull(key) ?: error("RpgObject $key 不存在")
 
-inline fun <reified T> RpgDataHolder.getOrNull(key: String): T? {
+suspend inline fun <reified T> RpgDataHolder.getOrNull(key: String): T? {
     return when(T::class) {
         Int::class -> getLongOrNull(key)?.toInt() as T
         Long::class -> getLongOrNull(key) as T
@@ -59,6 +59,6 @@ inline fun <reified T> RpgDataHolder.getOrNull(key: String): T? {
     }
 }
 
-inline fun <reified T> RpgDataHolder.get(key: String): T {
+suspend inline fun <reified T> RpgDataHolder.get(key: String): T {
     return getOrNull<T>(key)!!
 }

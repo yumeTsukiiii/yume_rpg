@@ -2,10 +2,12 @@ package fan.yumetsuki.yumerpg.ecs
 
 interface ECSContext {
 
-    suspend fun entities(): List<RpgEntity>
+    suspend fun entities(): List<ECSEntity>
 
-    suspend fun addEntity(vararg components: RpgComponent)
+    suspend fun addEntity(vararg components: ECSComponent)
 
-    suspend fun getOwner(component: RpgComponent): RpgEntity
+    suspend fun getOwner(component: ECSComponent): ECSEntity
 
 }
+
+suspend fun ECSContext.entitiesComponents() : List<ECSComponent> = entities().flatMap { it.components() }

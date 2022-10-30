@@ -33,7 +33,7 @@ interface RpgElement : RpgDataHolder {
 
     val constructorId: Long
 
-    fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject
+    suspend fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject
 
     companion object {
         fun getId(name: String) : Long = name.longHashCode()
@@ -69,7 +69,7 @@ class RpgElementArray(
 
     override val constructorId: Long = UNKNOWN_CONSTRUCTOR_ID
 
-    override fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject {
+    override suspend fun createRpgObject(rpgElementContext: RpgElementContext): RpgObject {
         return RpgObjectArray(content.map { it.createRpgObject(rpgElementContext) })
     }
 

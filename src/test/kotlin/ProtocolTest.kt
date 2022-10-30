@@ -1,33 +1,36 @@
 import fan.yumetsuki.yumerpg.builtin.*
+import fan.yumetsuki.yumerpg.ecs.ECSComponent
+import fan.yumetsuki.yumerpg.ecs.ECSEntity
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgElementProtocol
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgObjectProtocol
 import fan.yumetsuki.yumerpg.serialization.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TestAbility(
+class TestComponent(
     override val elementId: Long,
-    override val name: String,
-    override var value: Int
-) : PropertyAbility<Int, RpgModel>
+    val name: String,
+    var value: Int
+) : RpgComponent
 
-class TestAbilityConstructor : RpgObjectConstructor {
+class TestComponentConstructor : RpgObjectConstructor {
 
     override val id: Long
         get() = ID
 
-    override fun construct(context: RpgObjectConstructContext): RpgObject {
-        return TestAbility(
+    override suspend fun construct(context: RpgObjectConstructContext): RpgObject {
+        return TestComponent(
             elementId = context.elementId,
             name = context.getStringOrNull("name")!!,
             value = context.getLongOrNull("value")?.toInt() ?: 10
         )
     }
 
-    override fun deconstruct(context: RpgObjectDeconstructContext) {
-        val rpgObject = context.rpgObject<TestAbility>()
+    override suspend fun deconstruct(context: RpgObjectDeconstructContext) {
+        val rpgObject = context.rpgObject<TestComponent>()
         context.deconstruct {
             put("name", rpgObject.name)
             put("value", rpgObject.value)
@@ -46,15 +49,15 @@ val elementsContent = """
                         "id": 1,
                         "constructor": 1,
                         "data": {
-                            "name": "TestAbility"
+                            "name": "TestComponent"
                         }
                     },
                     {
                         "id": 2,
                         "constructor": 2,
                         "data": {
-                            "name": "TestRpgModel",
-                            "abilities": [
+                            "name": "TestRpgEntity",
+                            "components": [
                                 1
                             ]
                         }
@@ -73,29 +76,27 @@ val dataContent = """
                 ]
             """.trimIndent()
 
-class TestRpgModelConstructor : RpgObjectConstructor {
+class TestRpgEntityConstructor : RpgObjectConstructor {
 
     override val id: Long
         get() = ID
 
-    override fun construct(context: RpgObjectConstructContext): RpgObject {
-        return CommonRpgModel(
+    override suspend fun construct(context: RpgObjectConstructContext): RpgObject {
+        return ListRpgEntity(
             elementId = context.elementId,
-            meta = mapRpgMeta(
-                "name" to context.getStringOrNull("name")!!
-            ),
-            abilities = (
-                context.getRpgObjectOrNull("abilities")!! as RpgObjectArray
-            ).filterIsInstance<RpgAbility<*, *, *, *>>()
+            name = context.getString("name"),
+            components = (
+                context.getRpgObjectOrNull("components")!! as RpgObjectArray
+            ).filterIsInstance<RpgComponent>()
         )
     }
 
-    override fun deconstruct(context: RpgObjectDeconstructContext) {
-        val rpgObject = context.rpgObject<CommonRpgModel>()
+    override suspend fun deconstruct(context: RpgObjectDeconstructContext) {
+        val rpgObject = context.rpgObject<ECSEntity>()
 
         context.deconstruct {
-            put("name", rpgObject.meta().get<String>("name"))
-            put("abilities", RpgObjectArray(rpgObject.abilities()))
+            put("name", rpgObject.name)
+            put("components", RpgObjectArray(rpgObject.components().filterIsInstance<RpgComponent>()) as RpgObject)
         }
     }
 
@@ -108,13 +109,13 @@ class TestRpgModelConstructor : RpgObjectConstructor {
 class ProtocolTest {
 
     @Test
-    fun testJsonProtocol() {
+    fun testJsonProtocol() = runBlocking {
         val elements = JsonRpgElementProtocol.decodeFromContent(elementsContent)
         assertTrue(elements is RpgElementArray)
         assertEquals(2, elements.size)
-        assertEquals("TestAbility", elements[0].getStringOrNull("name"))
-        assertEquals("TestRpgModel", elements[1].getStringOrNull("name"))
-        assertEquals(1, elements[1].getStringOrNull("abilities")?.let {
+        assertEquals("TestComponent", elements[0].getStringOrNull("name"))
+        assertEquals("TestRpgEntity", elements[1].getStringOrNull("name"))
+        assertEquals(1, elements[1].getStringOrNull("components")?.let {
             Json.parseToJsonElement(it).jsonArray.size
         })
 
@@ -125,8 +126,8 @@ class ProtocolTest {
         }
 
         val rpgObjectConstructorCenter: RpgObjConstructorCenter = CommonRpgObjConstructorCenter().apply {
-            registerConstructor(TestAbilityConstructor())
-            registerConstructor(TestRpgModelConstructor())
+            registerConstructor(TestComponentConstructor())
+            registerConstructor(TestRpgEntityConstructor())
         }
 
         val serializeContext = CommonRpgObjSerializeContext(
@@ -141,15 +142,15 @@ class ProtocolTest {
 
         assertTrue(rpgObjects is RpgObjectArray)
         assertEquals(1, rpgObjects.size)
-        assertTrue(rpgObjects[0] is RpgModel)
-        val rpgModel = rpgObjects[0] as RpgModel
-        assertEquals(1, rpgModel.abilities().size)
-        assertEquals("TestRpgModel", rpgModel.meta().get<String>("name"))
+        assertTrue(rpgObjects[0] is RpgEntity)
+        val rpgModel = rpgObjects[0] as RpgEntity
+        assertEquals(1, rpgModel.components().size)
+        assertEquals("TestRpgEntity", rpgModel.name)
 
-        val testAbilities = rpgModel.abilities().filterIsInstance<TestAbility>()
+        val testAbilities = rpgModel.components().filterIsInstance<TestComponent>()
         assertEquals(1, testAbilities.size)
         assertEquals(10, testAbilities[0].value)
-        assertEquals("TestAbility", testAbilities[0].name)
+        assertEquals("TestComponent", testAbilities[0].name)
 
 
         testAbilities[0].value = 3
@@ -165,7 +166,7 @@ class ProtocolTest {
         assertEquals(2, rpgModelJson["element"]?.jsonPrimitive?.intOrNull)
         val rpgModelData = rpgModelJson["data"]?.jsonObject
         assertTrue(rpgModelData != null)
-        val abilitiesJson = rpgModelData["abilities"] as? JsonArray
+        val abilitiesJson = rpgModelData["components"] as? JsonArray
         assertTrue(abilitiesJson != null)
         val abilitiesJsonList = abilitiesJson.filterIsInstance<JsonObject>()
         assertEquals(1, abilitiesJsonList.size)
@@ -173,9 +174,8 @@ class ProtocolTest {
         val testAbilityFirst = abilitiesJsonList[0]
 
         assertEquals(1, testAbilityFirst["element"]?.jsonPrimitive?.intOrNull)
-        assertEquals("TestAbility", testAbilityFirst["data"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull)
+        assertEquals("TestComponent", testAbilityFirst["data"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull)
         assertEquals(3, testAbilityFirst["data"]?.jsonObject?.get("value")?.jsonPrimitive?.intOrNull)
-
     }
 
 }

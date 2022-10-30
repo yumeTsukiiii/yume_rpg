@@ -1,6 +1,6 @@
 package fan.yumetsuki.yumerpg.ecs
 
-interface RpgSystem {
+interface ECSSystem {
 
     suspend fun onUpdate(context: ECSContext)
 
