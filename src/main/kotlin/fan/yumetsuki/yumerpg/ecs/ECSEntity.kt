@@ -14,6 +14,26 @@ interface ECSEntity {
 
 }
 
+class ListECSEntity(
+    override val name: String,
+    private val components: List<ECSComponent>
+): ECSEntity {
+
+    override suspend fun components(): List<ECSComponent> = components
+
+    override suspend fun <T: ECSComponent> componentOrNull(clazz: KClass<T>): ECSComponent? {
+        return components().find {
+            clazz.isInstance(it)
+        }
+    }
+
+    override suspend fun <T : ECSComponent> hasComponent(clazz: KClass<T>): Boolean {
+        return componentOrNull(clazz) != null
+    }
+
+
+}
+
 suspend inline fun <reified T: ECSComponent> ECSEntity.componentOrNull(): ECSComponent? {
     return componentOrNull(T::class)
 }

@@ -4,7 +4,7 @@ interface ECSContext {
 
     suspend fun entities(): List<ECSEntity>
 
-    suspend fun addEntity(vararg components: ECSComponent)
+    suspend fun addEntity(vararg entities: ECSEntity)
 
     suspend fun getOwner(component: ECSComponent): ECSEntity
 

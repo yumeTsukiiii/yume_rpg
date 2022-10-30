@@ -25,6 +25,12 @@ class SimpleGameTest {
                     writeText(elementsContent)
                 }
             }
+            val rpgSystemFile = File("rpg_system.yumerpg").apply {
+                if (!exists()) {
+                    createNewFile()
+                    writeText(systemContent)
+                }
+            }
             val defaultDataFile = File("default_save.yumerpg").apply {
                 if (!exists()) {
                     createNewFile()
@@ -33,10 +39,12 @@ class SimpleGameTest {
             }
             val game = SingleRpgGame.start {
                 rpgElementFiles = listOf(rpgElementFile)
+                rpgSystemFiles = listOf(rpgSystemFile)
                 this.defaultDataFile = defaultDataFile
                 registerRpgObjectConstructor(
                     TestComponentConstructor(),
-                    TestRpgEntityConstructor()
+                    TestRpgEntityConstructor(),
+                    TestSystemConstructor()
                 )
                 onInitRpgObject {
                     assertTrue(this is RpgObjectArray)
@@ -68,7 +76,9 @@ class SimpleGameTest {
             ).jsonArray[0].jsonObject["data"]?.jsonObject?.get("components")?.jsonArray?.get(0)?.jsonObject?.get("data")?.jsonObject?.get("value")?.jsonPrimitive?.int!!)
             saveFile.parentFile.parentFile.deleteRecursively()
             rpgElementFile.delete()
+            rpgSystemFile.delete()
             defaultDataFile.delete()
+            game.stop()
         }
     }
 

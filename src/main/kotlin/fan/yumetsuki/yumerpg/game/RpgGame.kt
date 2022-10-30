@@ -4,6 +4,10 @@ interface RpgGame {
 
     suspend fun join(account: RpgAccount): RpgPlayer
 
+    suspend fun isRunning(): Boolean
+
+    suspend fun stop()
+
     suspend fun exit(account: RpgAccount)
 
     suspend fun save(account: RpgAccount)
@@ -11,8 +15,6 @@ interface RpgGame {
     suspend fun getPlayerOrNull(account: RpgAccount): RpgPlayer?
 
     suspend fun players(): List<RpgPlayer>
-
-    suspend fun restart() = Unit
 
 }
 

@@ -1,6 +1,7 @@
 import fan.yumetsuki.yumerpg.builtin.*
-import fan.yumetsuki.yumerpg.ecs.ECSComponent
+import fan.yumetsuki.yumerpg.ecs.ECSContext
 import fan.yumetsuki.yumerpg.ecs.ECSEntity
+import fan.yumetsuki.yumerpg.ecs.entitiesComponents
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgElementProtocol
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonRpgObjectProtocol
 import fan.yumetsuki.yumerpg.serialization.*
@@ -13,7 +14,8 @@ import kotlin.test.assertTrue
 class TestComponent(
     override val elementId: Long,
     val name: String,
-    var value: Int
+    var value: Int,
+    var systemModified: Int = 0
 ) : RpgComponent
 
 class TestComponentConstructor : RpgObjectConstructor {
@@ -43,6 +45,16 @@ class TestComponentConstructor : RpgObjectConstructor {
 
 }
 
+class TestSystem(override val elementId: Long) : RpgSystem {
+
+    override suspend fun onUpdate(context: ECSContext) {
+        context.entitiesComponents().filterIsInstance<TestComponent>().forEach {
+            it.systemModified = Int.MAX_VALUE
+        }
+    }
+
+}
+
 val elementsContent = """
                 [
                     {
@@ -61,6 +73,10 @@ val elementsContent = """
                                 1
                             ]
                         }
+                    },
+                    {
+                        "name": "TestSystem",
+                        "constructor": "TestSystemConstructor"
                     }
                 ]
             """.trimIndent()
@@ -75,6 +91,14 @@ val dataContent = """
                     }
                 ]
             """.trimIndent()
+
+val systemContent = """
+    [
+        {
+            "element": "TestSystem"
+        }
+    ]
+""".trimIndent()
 
 class TestRpgEntityConstructor : RpgObjectConstructor {
 
@@ -106,13 +130,21 @@ class TestRpgEntityConstructor : RpgObjectConstructor {
 
 }
 
+class TestSystemConstructor : RpgObjectConstructor {
+
+    override suspend fun construct(context: RpgObjectConstructContext): RpgObject {
+        return TestSystem(context.elementId)
+    }
+
+}
+
 class ProtocolTest {
 
     @Test
     fun testJsonProtocol() = runBlocking {
         val elements = JsonRpgElementProtocol.decodeFromContent(elementsContent)
         assertTrue(elements is RpgElementArray)
-        assertEquals(2, elements.size)
+        assertEquals(3, elements.size)
         assertEquals("TestComponent", elements[0].getStringOrNull("name"))
         assertEquals("TestRpgEntity", elements[1].getStringOrNull("name"))
         assertEquals(1, elements[1].getStringOrNull("components")?.let {

@@ -1,21 +1,27 @@
 package fan.yumetsuki.yumerpg.builtin.game
 
 import fan.yumetsuki.yumerpg.SingleRpgGame
+import fan.yumetsuki.yumerpg.builtin.RpgEntity
+import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeComponentConstructor
+import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeSystemConstructor
 import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyComponentConstructor
+import fan.yumetsuki.yumerpg.builtin.RpgSystem
+import fan.yumetsuki.yumerpg.ecs.ECSWorld
+import fan.yumetsuki.yumerpg.ecs.SimpleECSWorld
 import fan.yumetsuki.yumerpg.game.*
 import fan.yumetsuki.yumerpg.serialization.*
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonByteElementProtocol
 import fan.yumetsuki.yumerpg.serialization.protocol.JsonByteObjectProtocol
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 val globalRpgObjectConstructors: List<RpgObjectConstructor> = listOf(
-    PropertyComponentConstructor()
+    PropertyComponentConstructor(),
+    PropertyChangeComponentConstructor(),
+    PropertyChangeSystemConstructor()
 )
 
 /**
@@ -36,6 +42,10 @@ class SimpleGameStarterConfig(
      */
     val rpgElementFiles: List<File>,
     /**
+     * [RpgSystem] 配置文件集合
+     */
+    val rpgSystemFiles: List<File>,
+    /**
      * [RpgObjectConstructor] 配置
      */
     val rpgObjConstructorCenter: RpgObjConstructorCenter,
@@ -52,6 +62,8 @@ class SimpleGameStarterConfig(
     class Builder {
 
         var rpgElementFiles: List<File> = listOf(File(DEFAULT_ELEMENT_FILE))
+
+        var rpgSystemFiles: List<File> = listOf(File(DEFAULT_SYSTEM_FILE))
 
         var defaultDataFile: File = File(DEFAULT_DATA_FILE)
 
@@ -83,6 +95,7 @@ class SimpleGameStarterConfig(
             rpgElementProtocol,
             rpgObjectProtocol,
             rpgElementFiles,
+            rpgSystemFiles,
             rpgObjConstructorCenter,
             defaultDataFile,
             rpgObjectInitializer
@@ -93,6 +106,7 @@ class SimpleGameStarterConfig(
     companion object {
         const val DEFAULT_ELEMENT_FILE = "system/element/rpg_element.rpg"
         const val DEFAULT_DATA_FILE = "system/default_save.yumerpg"
+        const val DEFAULT_SYSTEM_FILE = "system/rpg_system.yumerpg"
     }
 
 }
@@ -106,19 +120,44 @@ class SimpleGameStarter(
 ): GameStarter {
 
     override suspend fun start(): RpgGame = simpleGameStarterConfig.run {
+        val elementCenter = CommonRpgElementCenter().apply {
+            withContext(Dispatchers.IO) {
+                rpgElementFiles.map {
+                    it.parentFile?.also { parentDir ->
+                        if (!parentDir.exists()) {
+                            parentDir.mkdirs()
+                        }
+                    }
+                    rpgElementProtocol.decodeFromContent(it.readBytes())
+                }
+            }.forEach {
+                registerElement(it)
+            }
+        }
+
+        val world = SimpleECSWorld()
+
         SimpleRpgGame(
-            CommonRpgElementCenter().apply {
-                withContext(Dispatchers.IO) {
-                    rpgElementFiles.map {
-                        it.parentFile?.also { parentDir ->
-                            if (!parentDir.exists()) {
-                                parentDir.mkdirs()
+            // 启动 GameWorld
+            world.run {
+                addSystem(
+                    *createSystems(elementCenter).toTypedArray()
+                )
+                CoroutineScope(Dispatchers.Default).apply {
+                    launch(Dispatchers.IO) {
+                        while (true) {
+                            try {
+                                onTick()
+                                delay(16.0.milliseconds)
+                            } catch (e: CancellationException) {
+                                break
                             }
                         }
-                        rpgElementProtocol.decodeFromContent(it.readBytes())
                     }
-                }.forEach(this::registerElement)
+                }
             },
+            world,
+            elementCenter,
             rpgObjConstructorCenter,
             rpgObjectProtocol,
             defaultDataFile,
@@ -126,6 +165,30 @@ class SimpleGameStarter(
         )
     }
 
+    private suspend fun SimpleGameStarterConfig.createSystems(rpgElementCenter: RpgElementCenter): List<RpgSystem> {
+        return withContext(Dispatchers.IO) {
+            rpgSystemFiles.map {
+                it.parentFile?.also { parentDir ->
+                    if (!parentDir.exists()) {
+                        parentDir.mkdirs()
+                    }
+                }
+                rpgObjectProtocol.decodeFromContent(
+                    CommonRpgObjSerializeContext(
+                        rpgElementCenter,
+                        rpgObjConstructorCenter
+                    ),
+                    it.readBytes()
+                )
+            }
+        }.mapNotNull {
+            when(it) {
+                is RpgSystem -> listOf(it)
+                is RpgObjectArray -> it.filterIsInstance<RpgSystem>()
+                else -> null
+            }
+        }.flatten()
+    }
 }
 
 class SimpleRpgAccount(override val id: Long) :RpgAccount
@@ -159,6 +222,8 @@ class SimpleRpgPlayer(
  * @author yumetsuki
  */
 class SimpleRpgGame(
+    private val runLoop: CoroutineScope,
+    private val world: ECSWorld,
     private val rpgElementCenter: RpgElementCenter,
     private val rpgObjConstructorCenter: RpgObjConstructorCenter,
     private val rpgObjectProtocol: RpgObjectProtocol<ByteArray>,
@@ -187,6 +252,14 @@ class SimpleRpgGame(
                     rpgObjectProtocol.decodeFromContent(rpgObjSerializeContext, content).also {
                         rpgObjectInitializer(it)
                     }
+                }.also {
+                    world.addEntity(
+                        *when(it) {
+                            is RpgEntity -> listOf(it)
+                            is RpgObjectArray -> it.filterIsInstance<RpgEntity>()
+                            else -> emptyList()
+                        }.toTypedArray()
+                    )
                 }
             },
             this
@@ -197,6 +270,16 @@ class SimpleRpgGame(
                     save()
                 }
             }
+        }
+    }
+
+    override suspend fun isRunning(): Boolean {
+        return runLoop.isActive
+    }
+
+    override suspend fun stop() {
+        if (runLoop.isActive) {
+            runLoop.cancel()
         }
     }
 

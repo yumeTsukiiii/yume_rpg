@@ -11,6 +11,12 @@ private object EmptyRpgGame: RpgGame {
         error("EmptyRpgGame")
     }
 
+    override suspend fun isRunning(): Boolean {
+        return false
+    }
+
+    override suspend fun stop() = Unit
+
     override suspend fun exit(account: RpgAccount) = Unit
 
     override suspend fun save(account: RpgAccount) = Unit
@@ -30,7 +36,7 @@ private object EmptyRpgGame: RpgGame {
 @Suppress("MemberVisibilityCanBePrivate")
 object SingleRpgGame : RpgGame {
 
-    private var innerGame: RpgGame = EmptyRpgGame
+    private lateinit var innerGame: RpgGame
 
     suspend fun start(starter: GameStarter) {
         if (!isRunning()) {
@@ -40,13 +46,8 @@ object SingleRpgGame : RpgGame {
 
     suspend fun restart(starter: GameStarter) {
         if (isRunning()) {
+            innerGame.stop()
             innerGame = starter.start()
-        }
-    }
-
-    fun exit() {
-        if (isRunning()) {
-            innerGame = EmptyRpgGame
         }
     }
 
@@ -55,6 +56,13 @@ object SingleRpgGame : RpgGame {
             error("游戏未运行，无法加入...")
         }
         return innerGame.join(account)
+    }
+
+    override suspend fun stop() {
+        if (!isRunning()) {
+            return
+        }
+        return innerGame.stop()
     }
 
     override suspend fun exit(account: RpgAccount) {
@@ -85,7 +93,7 @@ object SingleRpgGame : RpgGame {
         return innerGame.players()
     }
 
-    fun isRunning(): Boolean {
-        return innerGame != EmptyRpgGame
+    override suspend fun isRunning(): Boolean {
+        return this::innerGame.isInitialized && innerGame.isRunning()
     }
 }
