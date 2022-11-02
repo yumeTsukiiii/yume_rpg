@@ -1,20 +1,38 @@
 package fan.yumetsuki.yumerpg.ecs
 
-interface ECSWorld : ECSContext {
+import kotlin.reflect.KClass
+
+interface ECSWorld : ECSContext, ECSTicker {
+
+    suspend fun systems(): List<ECSSystem>
 
     suspend fun addSystem(vararg systems: ECSSystem)
 
-    suspend fun onTick()
-
 }
 
-class SimpleECSWorld : ECSWorld {
+class SimpleECSWorld : ECSWorld, ECSInitializeContext {
 
     private val systems = mutableListOf<ECSSystem>()
+    private val observableSystems = mutableMapOf<KClass<*>, List<ECSObservableSystem>>()
+
     private val entities = mutableListOf<ECSEntity>()
 
     override suspend fun addSystem(vararg systems: ECSSystem) {
-        this.systems.addAll(systems.toList())
+
+        systems.forEach {
+            it.onInitialize(this)
+        }
+
+        val observableSystems = systems.filterIsInstance<ECSObservableSystem>().toSet()
+
+        this.systems.addAll(
+            systems.subtract(observableSystems)
+        )
+
+    }
+
+    override suspend fun systems(): List<ECSSystem> {
+        return systems
     }
 
     override suspend fun onTick() {
@@ -32,5 +50,21 @@ class SimpleECSWorld : ECSWorld {
     override suspend fun getOwner(component: ECSComponent): ECSEntity = entities().find {
         it.components().contains(component)
     }!!
+
+    override suspend fun ECSObservableSystem.observeComponents(vararg componentTypes: KClass<ECSComponent>) {
+
+    }
+
+    override suspend fun ECSObservableSystem.observeEntities(vararg entityTypes: KClass<ECSEntity>) {
+
+    }
+
+    override suspend fun update(vararg components: ECSComponent) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun update(vararg entities: ECSEntity) {
+        TODO("Not yet implemented")
+    }
 
 }
