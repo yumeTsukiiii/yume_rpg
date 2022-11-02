@@ -13,7 +13,7 @@ interface ECSWorld : ECSContext, ECSTicker {
 class SimpleECSWorld : ECSWorld, ECSInitializeContext {
 
     private val systems = mutableListOf<ECSSystem>()
-    private val observableSystems = mutableMapOf<KClass<*>, List<ECSObservableSystem>>()
+    private val observableSystems = mutableMapOf<KClass<*>, MutableSet<ECSObservableSystem>>()
 
     private val entities = mutableListOf<ECSEntity>()
 
@@ -52,7 +52,11 @@ class SimpleECSWorld : ECSWorld, ECSInitializeContext {
     }!!
 
     override suspend fun ECSObservableSystem.observeComponents(vararg componentTypes: KClass<ECSComponent>) {
-
+        componentTypes.forEach { type ->
+            observableSystems.getOrPut(type) {
+                mutableSetOf()
+            }.add(this)
+        }
     }
 
     override suspend fun ECSObservableSystem.observeEntities(vararg entityTypes: KClass<ECSEntity>) {
