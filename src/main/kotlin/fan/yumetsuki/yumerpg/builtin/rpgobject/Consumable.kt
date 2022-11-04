@@ -2,9 +2,7 @@ package fan.yumetsuki.yumerpg.builtin.rpgobject
 
 import fan.yumetsuki.yumerpg.builtin.RpgComponent
 import fan.yumetsuki.yumerpg.builtin.RpgSystem
-import fan.yumetsuki.yumerpg.ecs.ECSContext
-import fan.yumetsuki.yumerpg.ecs.ECSEntity
-import fan.yumetsuki.yumerpg.ecs.entitiesComponents
+import fan.yumetsuki.yumerpg.ecs.*
 
 class ConsumableComponent(
     override val elementId: Long,
@@ -51,13 +49,23 @@ class ConsumableSystem(
     override val elementId: Long
 ) : RpgSystem {
 
+    override suspend fun onInitialize(context: ECSInitializeContext) {
+        context.observeComponent<ConsumableComponent>()
+    }
+
     override suspend fun onUpdate(context: ECSContext) {
         context.entitiesComponents().filterIsInstance<ConsumableComponent>().filter {
             it.isActive()
         }.map {
             it to context.getOwner(it).components().filterIsInstance<EffectComponent>()
         }.forEach { (consumable, effects) ->
-            effects.forEach { it.activate(consumable.user!!, consumable.target!!) }
+            while (consumable.useCount > 0) {
+                effects.forEach {
+                    it.activateAndUpdate(context, consumable.user!!, consumable.target!!)
+                }
+                consumable.useCount--
+                consumable.count--
+            }
         }
     }
 

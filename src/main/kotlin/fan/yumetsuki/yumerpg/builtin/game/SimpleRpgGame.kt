@@ -2,10 +2,10 @@ package fan.yumetsuki.yumerpg.builtin.game
 
 import fan.yumetsuki.yumerpg.SingleRpgGame
 import fan.yumetsuki.yumerpg.builtin.RpgEntity
-import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeComponentConstructor
-import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeSystemConstructor
 import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyComponentConstructor
 import fan.yumetsuki.yumerpg.builtin.RpgSystem
+import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeComponentConstructor
+import fan.yumetsuki.yumerpg.builtin.rpgobject.PropertyChangeSystemConstructor
 import fan.yumetsuki.yumerpg.ecs.ECSWorld
 import fan.yumetsuki.yumerpg.ecs.SimpleECSWorld
 import fan.yumetsuki.yumerpg.game.*

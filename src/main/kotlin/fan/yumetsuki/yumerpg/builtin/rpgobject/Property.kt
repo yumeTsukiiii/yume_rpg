@@ -5,10 +5,9 @@ import fan.yumetsuki.yumerpg.builtin.RpgSystem
 import fan.yumetsuki.yumerpg.builtin.script.ScriptEngine
 import fan.yumetsuki.yumerpg.builtin.script.v8.V8ScriptEngine
 import fan.yumetsuki.yumerpg.builtin.script.v8.registerECSEntity
-import fan.yumetsuki.yumerpg.ecs.ECSContext
-import fan.yumetsuki.yumerpg.ecs.ECSEntity
-import fan.yumetsuki.yumerpg.ecs.entitiesComponents
+import fan.yumetsuki.yumerpg.ecs.*
 import fan.yumetsuki.yumerpg.serialization.*
+import kotlin.reflect.KClass
 
 class PropertyComponent<PropertyType: Any>(
     override val elementId: Long,
@@ -46,36 +45,33 @@ class PropertyChangeComponent(
 class PropertyChangeSystem(
     override val elementId: Long,
     private val scriptEngine: ScriptEngine
-) : RpgSystem {
+) : EffectSystem<PropertyChangeComponent> {
+
+    override val effectComponentClass: KClass<PropertyChangeComponent>
+        get() = PropertyChangeComponent::class
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun onUpdate(context: ECSContext) {
-        context.entitiesComponents().filterIsInstance<PropertyChangeComponent>().filter {
-            it.isActive() && context.getOwner(it) == it.target
-        }.forEach {
-            it.target!!.components().filterIsInstance<PropertyComponent<*>>().find { property ->
-                property.name == it.changedProperty
-            }?.also { property ->
-                scriptEngine.createRuntimeContext().apply {
-                    registerECSEntity("user", it.user!!)
-                    registerECSEntity("target", it.target!!)
-                    exec(it.script)?.also { result ->
-                        when(property.value) {
-                            is Number -> {
-                                (property as NumberPropertyComponent).value = result as Number
-                            }
-                            is String -> {
-                                (property as StringPropertyComponent).value = result as String
-                            }
-                            is Boolean -> {
-                                (property as BooleanPropertyComponent).value = result as Boolean
-                            }
+    override suspend fun onEffectActive(effectComponent: PropertyChangeComponent) {
+        effectComponent.activeTarget.components().filterIsInstance<PropertyComponent<*>>().find { property ->
+            property.name == effectComponent.changedProperty
+        }?.also { property ->
+            scriptEngine.createRuntimeContext().apply {
+                registerECSEntity("user", effectComponent.activeUser)
+                registerECSEntity("target", effectComponent.activeTarget)
+                exec(effectComponent.script)?.also { result ->
+                    when(property.value) {
+                        is Number -> {
+                            (property as NumberPropertyComponent).value = result as Number
+                        }
+                        is String -> {
+                            (property as StringPropertyComponent).value = result as String
+                        }
+                        is Boolean -> {
+                            (property as BooleanPropertyComponent).value = result as Boolean
                         }
                     }
-                    // 执行过一次能力后，重置执行状态
-                    it.deactivate()
-                }.destroy()
-            }
+                }
+            }.destroy()
         }
     }
 

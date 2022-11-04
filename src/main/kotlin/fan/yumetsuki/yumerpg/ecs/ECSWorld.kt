@@ -47,6 +47,8 @@ class SimpleECSWorld : ECSWorld {
     }
 
     override suspend fun onTick() {
+        // TODO ，重新考虑这个设计是否需要在每次 onTick 时，创建 Entity / Component 的 SnapShot，对它们的更改，延迟到下一个 onTick 生效
+        // TODO，因为每个 System 都会影响 Component，不应该让 System 之间互相影响，否则多线程操作就会有问题，以后需要扩展 System 并行
         // 执行一轮延时执行的 System 任务
         if (nextTicks.isNotEmpty()) {
             buildList {
